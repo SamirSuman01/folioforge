@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   // Verify user owns this portfolio
   const { data: portfolio } = await supabase
     .from('portfolios')
-    .select('id, is_pro')
+    .select('id, is_pro, data, slug')
     .eq('id', portfolioId)
     .eq('user_id', user.id)
     .single();
@@ -43,17 +43,15 @@ export async function GET(request: Request) {
   // Aggregate stats
   const totalViews = analytics?.length || 0;
   const uniqueIps = new Set(analytics?.map((a) => a.visitor_ip)).size;
-  const avgDuration = analytics?.length
-    ? Math.round(
-        analytics.reduce((sum, a) => sum + (a.duration_seconds || 0), 0) /
-          analytics.filter((a) => a.duration_seconds).length || 1
-      )
+  const durRows = (analytics ?? []).filter((a) => a.duration_seconds && a.duration_seconds > 0)
+  const avgDuration = durRows.length
+    ? Math.round(durRows.reduce((sum, a) => sum + a.duration_seconds, 0) / durRows.length)
     : 0;
 
   // Company breakdown (top 10)
   const companyMap = new Map<string, number>();
   analytics?.forEach((a) => {
-    if (a.company && a.company !== '') {
+    if (a.company && a.company !== '' && a.company !== 'Unknown') {
       companyMap.set(a.company, (companyMap.get(a.company) || 0) + 1);
     }
   });
@@ -96,6 +94,16 @@ export async function GET(request: Request) {
     visitedAt: a.visited_at,
   }));
 
+  const portfolioData = portfolio.data as { name?: string } | null
+  const portfolioName = portfolioData?.name ?? 'Your portfolio'
+
+  // Count identified company visits for pro gate banner
+  const identifiedCompanyCount = new Set(
+    (analytics || [])
+      .map((a) => a.company)
+      .filter((c) => c && c !== '' && c !== 'Unknown')
+  ).size
+
   return NextResponse.json({
     totalViews,
     uniqueVisitors: uniqueIps,
@@ -105,5 +113,7 @@ export async function GET(request: Request) {
     topReferrers,
     recentVisitors,
     isPro: portfolio.is_pro,
+    portfolioName,
+    identifiedCompanyCount,
   });
 }

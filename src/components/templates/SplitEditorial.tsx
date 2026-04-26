@@ -29,7 +29,7 @@ export default function SplitEditorial({ data, showBadge = true }: Props) {
               {stats.map((stat, i) => (
                 <div key={i}>
                   <div className="text-2xl font-bold text-[#C77DFF] font-mono">{stat.value}</div>
-                  <div className="text-xs text-[#8A857E] uppercase tracking-wider mt-0.5">{stat.label}</div>
+                  <div className="text-micro text-[#8A857E] uppercase tracking-wider mt-0.5">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -38,12 +38,12 @@ export default function SplitEditorial({ data, showBadge = true }: Props) {
           {/* Skills */}
           {skills && skills.length > 0 && (
             <div data-section="skills" className="mt-8">
-              <h3 className="text-xs uppercase tracking-[0.2em] text-[#8A857E] mb-3 font-mono">Skills</h3>
+              <h3 className="text-micro uppercase tracking-[0.2em] text-[#8A857E] mb-3 font-mono">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {skills.map((skill, i) => (
                   <span
                     key={i}
-                    className="px-2.5 py-1 text-xs font-mono text-[#C77DFF] border border-[#C77DFF]/20 rounded"
+                    className="px-2.5 py-1 text-micro font-mono text-[#C77DFF] border border-[#C77DFF]/20 rounded"
                   >
                     {skill}
                   </span>
@@ -58,7 +58,7 @@ export default function SplitEditorial({ data, showBadge = true }: Props) {
           {/* Experience */}
           {experience && experience.length > 0 && (
             <section data-section="experience" className="mb-12">
-              <h2 className="text-xs uppercase tracking-[0.2em] text-[#8A857E] mb-8 font-mono">
+              <h2 className="text-micro uppercase tracking-[0.2em] text-[#8A857E] mb-8 font-mono">
                 Experience
               </h2>
               <div className="space-y-10">
@@ -67,12 +67,12 @@ export default function SplitEditorial({ data, showBadge = true }: Props) {
                     <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[#C77DFF]" />
                     <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between mb-2">
                       <h3 className="text-lg font-bold text-[#1A1A2E]">{exp.company}</h3>
-                      <span className="text-sm text-[#8A857E] font-mono">{exp.period}</span>
+                      <span className="text-small text-[#8A857E] font-mono">{exp.period}</span>
                     </div>
-                    <p className="text-[#C77DFF] text-sm font-medium mb-3">{exp.title}</p>
+                    <p className="text-[#C77DFF] text-small font-medium mb-3">{exp.title}</p>
                     <ul className="space-y-2">
-                      {exp.bullets.map((bullet, j) => (
-                        <li key={j} className="text-[#4A4A5A] text-sm leading-relaxed">
+                      {(exp.bullets ?? exp.highlights ?? []).map((bullet, j) => (
+                        <li key={j} className="text-[#4A4A5A] text-small leading-relaxed">
                           {bullet}
                         </li>
                       ))}
@@ -86,14 +86,14 @@ export default function SplitEditorial({ data, showBadge = true }: Props) {
           {/* Education */}
           {education && education.length > 0 && (
             <section data-section="education" className="mb-12">
-              <h2 className="text-xs uppercase tracking-[0.2em] text-[#8A857E] mb-8 font-mono">
+              <h2 className="text-micro uppercase tracking-[0.2em] text-[#8A857E] mb-8 font-mono">
                 Education
               </h2>
               <div className="space-y-4">
                 {education.map((edu, i) => (
                   <div key={i} className="pl-6 border-l-2 border-[#1A1A2E]/10">
                     <h3 className="text-lg font-bold text-[#1A1A2E]">{edu.institution}</h3>
-                    <p className="text-[#4A4A5A] text-sm">
+                    <p className="text-[#4A4A5A] text-small">
                       {edu.degree} · {edu.year}
                     </p>
                   </div>
@@ -106,10 +106,10 @@ export default function SplitEditorial({ data, showBadge = true }: Props) {
           {showBadge && (
             <footer className="pt-8 border-t border-[#1A1A2E]/5">
               <a
-                href={`${process.env.NEXT_PUBLIC_APP_URL || ''}?ref=badge`}
-                className="text-xs text-[#8A857E] hover:text-[#4A4A5A] transition-colors"
+                href={`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://forgefolio.com'}?ref=badge`}
+                className="text-micro text-[#8A857E] hover:text-[#4A4A5A] transition-colors"
               >
-                Built with FolioForge · Create your own portfolio →
+                Built with ForgeFolio · Create your own portfolio →
               </a>
             </footer>
           )}

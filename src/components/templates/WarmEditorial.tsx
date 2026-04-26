@@ -18,7 +18,7 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
         </h1>
         <p className="text-[#F59E0B] text-lg mt-4 font-medium">{role}</p>
         {tagline && (
-          <p className="text-[#A8A29E] mt-6 text-xl leading-relaxed font-serif italic max-w-2xl">
+          <p className="text-[#A8A29E] mt-6 text-h3 leading-relaxed font-serif italic max-w-2xl">
             &ldquo;{tagline}&rdquo;
           </p>
         )}
@@ -30,8 +30,8 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
           <div className="flex gap-8 flex-wrap">
             {stats.map((stat, i) => (
               <div key={i} className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-[#F59E0B] font-mono">{stat.value}</span>
-                <span className="text-sm text-[#78716C] uppercase tracking-wider">{stat.label}</span>
+                <span className="text-h1 font-bold text-[#F59E0B] font-mono">{stat.value}</span>
+                <span className="text-small text-[#78716C] uppercase tracking-wider">{stat.label}</span>
               </div>
             ))}
           </div>
@@ -42,7 +42,7 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
       {/* Experience */}
       {experience && experience.length > 0 && (
         <section data-section="experience" className="max-w-3xl mx-auto px-6 pb-16">
-          <h2 className="text-sm uppercase tracking-[0.15em] text-[#78716C] mb-10 flex items-center gap-3">
+          <h2 className="text-small uppercase tracking-[0.15em] text-[#78716C] mb-10 flex items-center gap-3">
             <span className="w-8 h-px bg-[#F59E0B]" />
             Experience
           </h2>
@@ -51,14 +51,14 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
               <div key={i} className="group">
                 <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between mb-3">
                   <div>
-                    <h3 className="text-xl font-bold font-serif">{exp.company}</h3>
-                    <p className="text-[#F59E0B] text-sm mt-0.5">{exp.title}</p>
+                    <h3 className="text-h3 font-bold font-serif">{exp.company}</h3>
+                    <p className="text-[#F59E0B] text-small mt-0.5">{exp.title}</p>
                   </div>
-                  <span className="text-sm text-[#78716C] font-mono mt-1 sm:mt-0">{exp.period}</span>
+                  <span className="text-small text-[#78716C] font-mono mt-1 sm:mt-0">{exp.period}</span>
                 </div>
                 <ul className="space-y-3 ml-4">
-                  {exp.bullets.map((bullet, j) => (
-                    <li key={j} className="text-[#A8A29E] text-sm leading-relaxed flex gap-3">
+                  {(exp.bullets ?? exp.highlights ?? []).map((bullet, j) => (
+                    <li key={j} className="text-[#A8A29E] text-small leading-relaxed flex gap-3">
                       <span className="text-[#F59E0B]/50 shrink-0 mt-1.5">•</span>
                       {bullet}
                     </li>
@@ -73,7 +73,7 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
       {/* Education */}
       {education && education.length > 0 && (
         <section data-section="education" className="max-w-3xl mx-auto px-6 pb-16">
-          <h2 className="text-sm uppercase tracking-[0.15em] text-[#78716C] mb-10 flex items-center gap-3">
+          <h2 className="text-small uppercase tracking-[0.15em] text-[#78716C] mb-10 flex items-center gap-3">
             <span className="w-8 h-px bg-[#F59E0B]" />
             Education
           </h2>
@@ -82,9 +82,9 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
               <div key={i} className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
                 <div>
                   <h3 className="text-lg font-bold font-serif">{edu.institution}</h3>
-                  <p className="text-[#A8A29E] text-sm">{edu.degree}</p>
+                  <p className="text-[#A8A29E] text-small">{edu.degree}</p>
                 </div>
-                <span className="text-sm text-[#78716C] font-mono mt-1 sm:mt-0">{edu.year}</span>
+                <span className="text-small text-[#78716C] font-mono mt-1 sm:mt-0">{edu.year}</span>
               </div>
             ))}
           </div>
@@ -94,7 +94,7 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
       {/* Skills */}
       {skills && skills.length > 0 && (
         <section data-section="skills" className="max-w-3xl mx-auto px-6 pb-16">
-          <h2 className="text-sm uppercase tracking-[0.15em] text-[#78716C] mb-10 flex items-center gap-3">
+          <h2 className="text-small uppercase tracking-[0.15em] text-[#78716C] mb-10 flex items-center gap-3">
             <span className="w-8 h-px bg-[#F59E0B]" />
             Skills
           </h2>
@@ -102,7 +102,7 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
             {skills.map((skill, i) => (
               <span
                 key={i}
-                className="px-3 py-1.5 text-sm text-[#E7E5E4] border border-white/10 rounded-full bg-white/5 hover:border-[#F59E0B]/30 transition-colors"
+                className="px-3 py-1.5 text-small text-[#E7E5E4] border border-white/10 rounded-full bg-white/5 hover:border-[#F59E0B]/30 transition-colors"
               >
                 {skill}
               </span>
@@ -115,10 +115,10 @@ export default function WarmEditorial({ data, showBadge = true }: Props) {
       {showBadge && (
         <footer className="text-center py-8 border-t border-white/5">
           <a
-            href={`${process.env.NEXT_PUBLIC_APP_URL || ''}?ref=badge`}
-            className="text-xs text-[#78716C] hover:text-[#A8A29E] transition-colors"
+            href={`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://forgefolio.com'}?ref=badge`}
+            className="text-micro text-[#78716C] hover:text-[#A8A29E] transition-colors"
           >
-            Built with FolioForge · Create your own portfolio →
+            Built with ForgeFolio · Create your own portfolio →
           </a>
         </footer>
       )}

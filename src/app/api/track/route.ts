@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
+import { anonymizeIp } from '@/lib/rate-limit'
 
 function getSupabase() {
   return createClient(
@@ -34,44 +35,60 @@ export async function POST(request: Request) {
     return new Response('Missing portfolioId', { status: 400 });
   }
 
-  const ip =
+  const rawIp =
     request.headers.get('x-vercel-forwarded-for') ||
     request.headers.get('x-real-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    'unknown';
+    'unknown'
 
-  const ipRegex = /^[\d.]+$|^[\da-fA-F:]+$/;
-  const safeIp = ipRegex.test(ip) ? ip : 'unknown';
+  // Anonymize to /24 (IPv4) or /48 (IPv6) for GDPR compliance — we never store exact IPs
+  const safeIp = anonymizeIp(rawIp)
 
   if (type === 'duration_update' && duration) {
-    await supabase
+    // PostgREST doesn't support order/limit on updates — fetch the latest row ID first
+    const { data: latest } = await supabase
       .from('analytics')
-      .update({ duration_seconds: duration })
+      .select('id')
       .eq('portfolio_id', portfolioId)
       .eq('visitor_ip', safeIp)
       .order('visited_at', { ascending: false })
-      .limit(1);
+      .limit(1)
+      .single();
+
+    if (latest?.id) {
+      await supabase
+        .from('analytics')
+        .update({ duration_seconds: duration })
+        .eq('id', latest.id);
+    }
     return new Response('ok', { status: 200 });
   }
 
-  let geo = { city: 'Unknown', country: 'Unknown', org: '' };
-  if (safeIp !== 'unknown') {
+  let geo = { city: 'Unknown', country: 'Unknown', org: '' }
+  // Use the full (non-anonymized) IP for geo lookup only — the IP is not stored
+  const lookupIp = rawIp !== 'unknown' ? rawIp : null
+  if (lookupIp) {
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 3000)
       const geoRes = await fetch(
-        `https://ip-api.com/json/${safeIp}?fields=city,country,org`,
+        `https://ip-api.com/json/${lookupIp}?fields=city,country,org`,
         { signal: controller.signal }
-      );
-      clearTimeout(timeout);
-      const geoData = await geoRes.json();
-      geo = {
-        city: geoData.city || 'Unknown',
-        country: geoData.country || 'Unknown',
-        org: geoData.org || '',
-      };
+      )
+      clearTimeout(timeout)
+      if (geoRes.ok) {
+        const geoData = await geoRes.json()
+        if (geoData.status !== 'fail') {
+          geo = {
+            city:    geoData.city    || 'Unknown',
+            country: geoData.country || 'Unknown',
+            org:     geoData.org     || '',
+          }
+        }
+      }
+      // 429 from ip-api (rate limited) — silently proceed with defaults
     } catch {
-      // Geo lookup failed — proceed with defaults
+      // Network error or timeout — proceed with defaults
     }
   }
 

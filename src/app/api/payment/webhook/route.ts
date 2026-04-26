@@ -1,58 +1,62 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
+import { createHmac } from 'crypto'
 
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  )
 }
 
 export async function POST(request: Request) {
-  const body = await request.text();
-  const sig = request.headers.get('stripe-signature');
+  const body = await request.text()
+  const sig  = request.headers.get('x-razorpay-signature')
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET
 
-  if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return new Response('Missing signature or webhook secret', { status: 400 });
+  if (!sig || !secret) {
+    return new Response('Missing signature or webhook secret', { status: 400 })
   }
 
-  let event;
+  const expected = createHmac('sha256', secret).update(body).digest('hex')
+  if (expected !== sig) {
+    return new Response('Invalid signature', { status: 400 })
+  }
+
+  let event: { event: string; payload: Record<string, unknown> }
   try {
-    const Stripe = (await import('stripe')).default;
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    return new Response(`Webhook error: ${err instanceof Error ? err.message : 'Unknown'}`, { status: 400 });
+    event = JSON.parse(body)
+  } catch {
+    return new Response('Invalid JSON', { status: 400 })
   }
 
-  const supabase = getSupabase();
+  const supabase = getSupabase()
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as { metadata?: { userId?: string; portfolioId?: string } };
-    const userId = session.metadata?.userId;
-    const portfolioId = session.metadata?.portfolioId;
+  // subscription.activated → grant Pro
+  if (event.event === 'subscription.activated' || event.event === 'payment.captured') {
+    const notes = (
+      (event.payload?.subscription as { entity?: { notes?: { userId?: string } } })?.entity?.notes ??
+      (event.payload?.payment     as { entity?: { notes?: { userId?: string } } })?.entity?.notes
+    ) as { userId?: string } | undefined
 
-    if (userId && portfolioId) {
-      await supabase
-        .from('portfolios')
-        .update({ is_pro: true })
-        .eq('id', portfolioId)
-        .eq('user_id', userId);
+    const userId = notes?.userId
+    if (userId) {
+      await supabase.from('profiles').update({ is_pro: true }).eq('id', userId)
+      await supabase.from('portfolios').update({ is_pro: true }).eq('user_id', userId)
     }
   }
 
-  if (event.type === 'customer.subscription.deleted') {
-    const subscription = event.data.object as { metadata?: { userId?: string; portfolioId?: string } };
-    const userId = subscription.metadata?.userId;
-    const portfolioId = subscription.metadata?.portfolioId;
+  // subscription.cancelled / subscription.halted → revoke Pro
+  if (event.event === 'subscription.cancelled' || event.event === 'subscription.halted') {
+    const notes = (
+      event.payload?.subscription as { entity?: { notes?: { userId?: string } } }
+    )?.entity?.notes as { userId?: string } | undefined
 
-    if (userId && portfolioId) {
-      await supabase
-        .from('portfolios')
-        .update({ is_pro: false })
-        .eq('id', portfolioId)
-        .eq('user_id', userId);
+    const userId = notes?.userId
+    if (userId) {
+      await supabase.from('profiles').update({ is_pro: false }).eq('id', userId)
+      await supabase.from('portfolios').update({ is_pro: false }).eq('user_id', userId)
     }
   }
 
-  return new Response('ok', { status: 200 });
+  return new Response('ok', { status: 200 })
 }

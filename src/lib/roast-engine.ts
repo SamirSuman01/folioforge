@@ -12,7 +12,7 @@ type RoastCheck = (data: PortfolioData) => { line: string; tip: string } | null;
 const checks: RoastCheck[] = [
   // No metrics in bullets
   (data) => {
-    const bullets = data.experience.flatMap(e => e.bullets).filter(b => b.length > 0);
+    const bullets = data.experience.flatMap(e => e.bullets ?? e.highlights ?? []).filter(b => b && b.length > 0);
     const withMetrics = bullets.filter(b => /\d+[%$KMBx]|\$\d/i.test(b));
     if (bullets.length > 0 && withMetrics.length === 0) {
       return {
@@ -51,7 +51,7 @@ const checks: RoastCheck[] = [
 
   // No stats
   (data) => {
-    const realStats = data.stats.filter(s => s.value && s.label);
+    const realStats = (data.stats ?? []).filter(s => s.value && s.label);
     if (realStats.length === 0) {
       return {
         line: `Zero stats? You've been working for years and can't name ONE number? Even my Uber driver has a 4.9 rating.`,
@@ -91,7 +91,7 @@ const checks: RoastCheck[] = [
 
   // Short experience bullets
   (data) => {
-    const shortBullets = data.experience.flatMap(e => e.bullets).filter(b => b.length > 0 && b.length < 40);
+    const shortBullets = data.experience.flatMap(e => e.bullets ?? e.highlights ?? []).filter(b => b && b.length > 0 && b.length < 40);
     if (shortBullets.length >= 2) {
       return {
         line: `"${shortBullets[0].slice(0, 35)}..." — that's not a bullet point, that's a text message. To yourself. At 2am.`,
@@ -103,7 +103,7 @@ const checks: RoastCheck[] = [
 
   // Single bullet per experience
   (data) => {
-    const singleBulletJobs = data.experience.filter(e => e.bullets.filter(b => b.length > 0).length === 1);
+    const singleBulletJobs = data.experience.filter(e => (e.bullets ?? e.highlights ?? []).filter(b => b.length > 0).length === 1);
     if (singleBulletJobs.length > 0) {
       const job = singleBulletJobs[0];
       return {
@@ -116,7 +116,7 @@ const checks: RoastCheck[] = [
 
   // No education
   (data) => {
-    if (data.education.length === 0) {
+    if ((data.education ?? []).length === 0) {
       return {
         line: `No education listed. Either you're a self-taught genius or you're hoping nobody asks. Plot twist: they will.`,
         tip: 'Add at least one education entry. Bootcamps, certifications, and online courses count too.',
@@ -140,7 +140,7 @@ const checks: RoastCheck[] = [
   // Passive voice bullets
   (data) => {
     const passiveStarts = ['was', 'were', 'been', 'being', 'responsible', 'worked', 'helped', 'assisted', 'participated', 'involved'];
-    const bullets = data.experience.flatMap(e => e.bullets).filter(b => b.length > 0);
+    const bullets = data.experience.flatMap(e => e.bullets ?? e.highlights ?? []).filter(b => b && b.length > 0);
     const passiveBullets = bullets.filter(b => {
       const first = b.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, '');
       return passiveStarts.includes(first);

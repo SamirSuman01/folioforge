@@ -21,7 +21,7 @@ export default function Broadsheet({ data, showBadge = true }: Props) {
         <div className="w-full h-px bg-[#2A2A2A]/20 my-4" />
         <p className="text-lg font-serif italic text-[#4A4A5A]">{role}</p>
         {tagline && (
-          <p className="mt-3 text-[#6A6A7A] text-sm max-w-lg mx-auto leading-relaxed">
+          <p className="mt-3 text-[#6A6A7A] text-small max-w-lg mx-auto leading-relaxed">
             {tagline}
           </p>
         )}
@@ -48,18 +48,18 @@ export default function Broadsheet({ data, showBadge = true }: Props) {
           <div>
             {experience && experience.length > 0 && (
               <section data-section="experience">
-                <h2 className="text-xs uppercase tracking-[0.3em] text-[#2A2A2A] font-bold border-b-2 border-[#2A2A2A] pb-1 mb-6">
+                <h2 className="text-micro uppercase tracking-[0.3em] text-[#2A2A2A] font-bold border-b-2 border-[#2A2A2A] pb-1 mb-6">
                   Experience
                 </h2>
                 <div className="space-y-6">
                   {experience.map((exp, i) => (
                     <article key={i}>
-                      <h3 className="text-base font-bold font-serif">{exp.company}</h3>
-                      <p className="text-xs text-[#6A6A7A] mb-2">
+                      <h3 className="text-body font-bold font-serif">{exp.company}</h3>
+                      <p className="text-micro text-[#6A6A7A] mb-2">
                         {exp.title} · {exp.period}
                       </p>
-                      {exp.bullets.map((bullet, j) => (
-                        <p key={j} className="text-sm text-[#4A4A5A] leading-relaxed mb-1 indent-4 first-letter:font-bold first-letter:text-base">
+                      {(exp.bullets ?? exp.highlights ?? []).map((bullet, j) => (
+                        <p key={j} className="text-small text-[#4A4A5A] leading-relaxed mb-1 indent-4 first-letter:font-bold">
                           {bullet}
                         </p>
                       ))}
@@ -74,14 +74,14 @@ export default function Broadsheet({ data, showBadge = true }: Props) {
           <div>
             {education && education.length > 0 && (
               <section data-section="education" className="mb-8">
-                <h2 className="text-xs uppercase tracking-[0.3em] text-[#2A2A2A] font-bold border-b-2 border-[#2A2A2A] pb-1 mb-6">
+                <h2 className="text-micro uppercase tracking-[0.3em] text-[#2A2A2A] font-bold border-b-2 border-[#2A2A2A] pb-1 mb-6">
                   Education
                 </h2>
                 <div className="space-y-4">
                   {education.map((edu, i) => (
                     <div key={i}>
-                      <h3 className="text-base font-bold font-serif">{edu.institution}</h3>
-                      <p className="text-sm text-[#6A6A7A]">
+                      <h3 className="text-body font-bold font-serif">{edu.institution}</h3>
+                      <p className="text-small text-[#6A6A7A]">
                         {edu.degree} · {edu.year}
                       </p>
                     </div>
@@ -92,14 +92,14 @@ export default function Broadsheet({ data, showBadge = true }: Props) {
 
             {skills && skills.length > 0 && (
               <section data-section="skills">
-                <h2 className="text-xs uppercase tracking-[0.3em] text-[#2A2A2A] font-bold border-b-2 border-[#2A2A2A] pb-1 mb-6">
+                <h2 className="text-micro uppercase tracking-[0.3em] text-[#2A2A2A] font-bold border-b-2 border-[#2A2A2A] pb-1 mb-6">
                   Competencies
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {skills.map((skill, i) => (
                     <span
                       key={i}
-                      className="px-2 py-1 text-xs font-serif border border-[#2A2A2A]/20 bg-[#2A2A2A]/5"
+                      className="px-2 py-1 text-micro font-serif border border-[#2A2A2A]/20 bg-[#2A2A2A]/5"
                     >
                       {skill}
                     </span>
@@ -115,10 +115,10 @@ export default function Broadsheet({ data, showBadge = true }: Props) {
       {showBadge && (
         <footer className="max-w-4xl mx-auto px-8 py-6 border-t border-[#2A2A2A]/10 text-center">
           <a
-            href={`${process.env.NEXT_PUBLIC_APP_URL || ''}?ref=badge`}
+            href={`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://forgefolio.com'}?ref=badge`}
             className="text-[10px] uppercase tracking-[0.3em] text-[#8A857E] hover:text-[#4A4A5A] transition-colors"
           >
-            Built with FolioForge · Create your own portfolio →
+            Built with ForgeFolio · Create your own portfolio →
           </a>
         </footer>
       )}

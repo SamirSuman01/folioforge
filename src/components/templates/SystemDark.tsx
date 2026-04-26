@@ -32,10 +32,10 @@ export default function SystemDark({ data, showBadge = true }: Props) {
                 key={i}
                 className="text-center py-6 border border-white/5 rounded-lg bg-[#0D1120]"
               >
-                <div className="text-3xl font-bold text-[#4CC9FF] font-mono">
+                <div className="text-h1 font-bold text-[#4CC9FF] font-mono">
                   {stat.value}
                 </div>
-                <div className="text-sm text-[#8A857E] mt-1 uppercase tracking-wider">
+                <div className="text-small text-[#8A857E] mt-1 uppercase tracking-wider">
                   {stat.label}
                 </div>
               </div>
@@ -47,19 +47,19 @@ export default function SystemDark({ data, showBadge = true }: Props) {
       {/* Experience */}
       {experience && experience.length > 0 && (
         <section data-section="experience" className="max-w-3xl mx-auto px-6 pb-12">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-[#8A857E] mb-6 font-mono">
+          <h2 className="text-micro uppercase tracking-[0.2em] text-[#8A857E] mb-6 font-mono">
             Experience
           </h2>
           <div className="border-l border-white/10 pl-6 space-y-8">
             {experience.map((exp, i) => (
               <div key={i}>
                 <h3 className="text-lg font-semibold text-bone">{exp.company}</h3>
-                <p className="text-[#4CC9FF] text-sm font-mono">
+                <p className="text-[#4CC9FF] text-small font-mono">
                   {exp.title} · {exp.period}
                 </p>
                 <ul className="mt-3 space-y-2">
-                  {exp.bullets.map((bullet, j) => (
-                    <li key={j} className="text-[#B8B3AA] text-sm leading-relaxed flex gap-2">
+                  {(exp.bullets ?? exp.highlights ?? []).map((bullet, j) => (
+                    <li key={j} className="text-[#B8B3AA] text-small leading-relaxed flex gap-2">
                       <span className="text-[#4CC9FF] shrink-0">→</span>
                       {bullet}
                     </li>
@@ -74,14 +74,14 @@ export default function SystemDark({ data, showBadge = true }: Props) {
       {/* Education */}
       {education && education.length > 0 && (
         <section data-section="education" className="max-w-3xl mx-auto px-6 pb-12">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-[#8A857E] mb-6 font-mono">
+          <h2 className="text-micro uppercase tracking-[0.2em] text-[#8A857E] mb-6 font-mono">
             Education
           </h2>
           <div className="space-y-4">
             {education.map((edu, i) => (
               <div key={i}>
                 <h3 className="text-lg font-semibold text-bone">{edu.institution}</h3>
-                <p className="text-[#B8B3AA] text-sm">
+                <p className="text-[#B8B3AA] text-small">
                   {edu.degree} · {edu.year}
                 </p>
               </div>
@@ -93,14 +93,14 @@ export default function SystemDark({ data, showBadge = true }: Props) {
       {/* Skills */}
       {skills && skills.length > 0 && (
         <section data-section="skills" className="max-w-3xl mx-auto px-6 pb-16">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-[#8A857E] mb-6 font-mono">
+          <h2 className="text-micro uppercase tracking-[0.2em] text-[#8A857E] mb-6 font-mono">
             Skills
           </h2>
           <div className="flex flex-wrap gap-2">
             {skills.map((skill, i) => (
               <span
                 key={i}
-                className="px-3 py-1.5 text-sm font-mono text-[#4CC9FF] border border-[#4CC9FF]/20 rounded bg-[#4CC9FF]/5"
+                className="px-3 py-1.5 text-small font-mono text-[#4CC9FF] border border-[#4CC9FF]/20 rounded bg-[#4CC9FF]/5"
               >
                 {skill}
               </span>
@@ -113,10 +113,10 @@ export default function SystemDark({ data, showBadge = true }: Props) {
       {showBadge && (
         <footer className="text-center py-8 border-t border-white/5">
           <a
-            href={`${process.env.NEXT_PUBLIC_APP_URL || ''}?ref=badge`}
-            className="text-xs text-[#5E5954] hover:text-[#8A857E] transition-colors"
+            href={`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://forgefolio.com'}?ref=badge`}
+            className="text-micro text-[#5E5954] hover:text-[#8A857E] transition-colors"
           >
-            Built with FolioForge · Create your own portfolio →
+            Built with ForgeFolio · Create your own portfolio →
           </a>
         </footer>
       )}

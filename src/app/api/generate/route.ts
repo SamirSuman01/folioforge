@@ -1,64 +1,71 @@
-import { generatePortfolioStream } from '@/lib/ai';
-import type { Field } from '@/lib/types';
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase-server'
+import { generatePortfolioSections } from '@/lib/ai'
+import { rateLimit, getClientId } from '@/lib/rate-limit'
+import type { ExtractedData } from '@/store/onboarding'
 
+// POST /api/generate
+// Body: { extractedData: ExtractedData, field: string }
+// Returns: { sections: GeneratedSection[], score: number }
+// Auth optional: unauthenticated calls are allowed for the onboarding flow
+// (user sees portfolio before signing up). Rate limits differ:
+//   authenticated  → 20/hour by user ID
+//   unauthenticated → 5/hour by IP (stricter — no account to blame)
 export async function POST(request: Request) {
-  const { text, field } = await request.json();
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!text) {
-    return new Response(JSON.stringify({ error: 'Missing text' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (user) {
+    // Authenticated path — generous limit
+    const rl = rateLimit(user.id, 'generate', 20, 60 * 60 * 1000)
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: { message: 'Too many requests. Please wait before generating again.' } },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetMs - Date.now()) / 1000)) } }
+      )
+    }
+  } else {
+    // Unauthenticated path — onboarding flow. Strict IP-based limit.
+    const clientId = getClientId(request)
+    const rl = rateLimit(clientId, 'generate-anon', 5, 60 * 60 * 1000)
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: { message: 'Too many requests. Please wait before generating again.' } },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetMs - Date.now()) / 1000)) } }
+      )
+    }
   }
 
-  let aiResponse: Response;
   try {
-    aiResponse = await generatePortfolioStream(text, (field as Field) || 'cs');
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'AI generation failed' }),
-      { status: 502, headers: { 'Content-Type': 'application/json' } }
-    );
+    // Size guard — prevent giant payloads from being embedded in prompts
+    const contentLength = request.headers.get('content-length')
+    if (contentLength && parseInt(contentLength) > 100_000) {
+      return NextResponse.json(
+        { error: { message: 'Request body too large.' } },
+        { status: 413 }
+      )
+    }
+
+    const body = await request.json()
+    const { extractedData, field } = body as {
+      extractedData: ExtractedData
+      field: string
+    }
+
+    if (!extractedData) {
+      return NextResponse.json(
+        { error: { message: 'Missing extractedData' } },
+        { status: 400 }
+      )
+    }
+
+    const result = await generatePortfolioSections(extractedData, field || 'other')
+    return NextResponse.json(result)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Generation failed'
+    return NextResponse.json(
+      { error: { message } },
+      { status: 500 }
+    )
   }
-
-  if (!aiResponse.ok) {
-    const errorText = await aiResponse.text();
-    return new Response(
-      JSON.stringify({ error: `AI provider error: ${aiResponse.status}`, details: errorText }),
-      { status: 502, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  // Transform AI stream → SSE stream for client
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      const reader = aiResponse.body!.getReader();
-      const decoder = new TextDecoder();
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) {
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
-            break;
-          }
-          const chunk = decoder.decode(value, { stream: true });
-          controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
-        }
-      } catch {
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-    },
-  });
 }

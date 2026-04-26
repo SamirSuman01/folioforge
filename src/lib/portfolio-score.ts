@@ -36,9 +36,9 @@ const REALISTIC_METRIC = /\b(?:\d{1,3}(?:,\d{3})*|\d{1,4})\s*[%$KMBx]|\$\s*(?:\d
 const FIELD_SKILLS: Record<Field, string[]> = {
   cs: ['react', 'python', 'javascript', 'typescript', 'aws', 'docker', 'kubernetes', 'node', 'sql', 'git', 'api', 'cloud', 'devops', 'machine learning', 'golang', 'go', 'rust', 'java', 'c++', 'graphql', 'redis', 'postgresql', 'mongodb'],
   design: ['figma', 'sketch', 'adobe', 'ui', 'ux', 'prototyping', 'wireframe', 'typography', 'branding', 'illustration', 'motion', 'design system', 'user research', 'accessibility', 'photoshop', 'after effects'],
-  finance: ['financial modeling', 'excel', 'bloomberg', 'valuation', 'risk', 'compliance', 'audit', 'forecasting', 'budgeting', 'analysis', 'portfolio', 'trading', 'derivatives', 'equity', 'accounting', 'gaap'],
+  business: ['financial modeling', 'excel', 'bloomberg', 'valuation', 'risk', 'compliance', 'audit', 'forecasting', 'budgeting', 'analysis', 'portfolio', 'trading', 'derivatives', 'equity', 'accounting', 'gaap', 'consulting', 'strategy'],
   marketing: ['seo', 'sem', 'analytics', 'campaign', 'content', 'social media', 'email', 'crm', 'hubspot', 'google ads', 'copywriting', 'branding', 'growth', 'conversion', 'funnel', 'a/b testing'],
-  research: ['research', 'publication', 'analysis', 'methodology', 'statistics', 'data', 'peer review', 'hypothesis', 'experiment', 'survey', 'qualitative', 'quantitative', 'r', 'spss', 'matlab', 'thesis'],
+  other: ['research', 'publication', 'analysis', 'methodology', 'statistics', 'data', 'peer review', 'hypothesis', 'experiment', 'survey', 'qualitative', 'quantitative', 'r', 'spss', 'matlab', 'thesis'],
 };
 
 function textSimilarity(a: string, b: string): number {
@@ -58,6 +58,13 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
   let fieldRelevance = 0;
   let presentation = 0;
 
+  const role = data.role ?? '';
+  const tagline = data.tagline ?? '';
+  const stats = data.stats ?? [];
+  const education = data.education ?? [];
+  const experience = data.experience ?? [];
+  const skills = data.skills ?? [];
+
   // ═══════════════════════════════════════════
   // COMPLETENESS (25 points)
   // ═══════════════════════════════════════════
@@ -65,30 +72,30 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
   if (data.name && data.name.length >= 2) completeness += 3;
   else tips.push({ category: 'Completeness', message: 'Add your full name', impact: 3 });
 
-  if (data.role && data.role.length >= 3) completeness += 3;
+  if (role.length >= 3) completeness += 3;
   else tips.push({ category: 'Completeness', message: 'Add your current role/title', impact: 3 });
 
-  if (data.tagline && data.tagline.length >= 30) completeness += 5;
-  else if (data.tagline && data.tagline.length > 0) {
+  if (tagline.length >= 30) completeness += 5;
+  else if (tagline.length > 0) {
     completeness += 2;
     tips.push({ category: 'Completeness', message: 'Expand your tagline — aim for 50+ characters with a specific accomplishment', impact: 3 });
   } else {
     tips.push({ category: 'Completeness', message: 'Add a tagline that summarizes your impact in one sentence', impact: 5 });
   }
 
-  const statsCount = Math.min(data.stats.filter(s => s.value && s.label).length, 4);
+  const statsCount = Math.min(stats.filter(s => s.value && s.label).length, 4);
   completeness += Math.min(statsCount * 2, 4);
   if (statsCount < 2) tips.push({ category: 'Completeness', message: `Add ${2 - statsCount} more stat(s) — numbers grab attention in the first 3 seconds`, impact: (2 - statsCount) * 2 });
 
-  const expCount = data.experience.filter(e => e.company && e.title).length;
+  const expCount = experience.filter(e => e.company && (e.title || e.role)).length;
   completeness += Math.min(expCount * 2.5, 5);
   if (expCount < 2) tips.push({ category: 'Completeness', message: 'Add at least 2 work experiences to show career progression', impact: (2 - expCount) * 2.5 });
 
-  const eduCount = data.education.filter(e => e.institution).length;
+  const eduCount = education.filter(e => e.institution).length;
   completeness += Math.min(eduCount * 3, 3);
   if (eduCount === 0) tips.push({ category: 'Completeness', message: 'Add your education — even one entry adds credibility', impact: 3 });
 
-  const skillCount = data.skills.filter(s => s.length > 0).length;
+  const skillCount = skills.filter(s => s.length > 0).length;
   completeness += Math.min(skillCount >= 5 ? 2 : skillCount >= 3 ? 1 : 0, 2);
   if (skillCount < 5) tips.push({ category: 'Completeness', message: `Add ${5 - skillCount} more skills to reach the recommended minimum of 5`, impact: 1 });
 
@@ -96,7 +103,7 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
   // IMPACT LANGUAGE (25 points)
   // ═══════════════════════════════════════════
 
-  const allBullets = data.experience.flatMap(e => e.bullets).filter(b => b.length > 0);
+  const allBullets = experience.flatMap(e => e.bullets ?? e.highlights ?? []).filter(b => b && b.length > 0);
 
   if (allBullets.length > 0) {
     // Metric usage: how many bullets contain quantified results
@@ -146,20 +153,20 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
   // ═══════════════════════════════════════════
 
   // Average bullets per experience (target: 3+)
-  const expWithBullets = data.experience.filter(e => e.bullets.length > 0);
+  const expWithBullets = experience.filter(e => (e.bullets ?? e.highlights ?? []).length > 0);
   if (expWithBullets.length > 0) {
-    const avgBullets = expWithBullets.reduce((sum, e) => sum + e.bullets.filter(b => b.length > 0).length, 0) / expWithBullets.length;
+    const avgBullets = expWithBullets.reduce((sum, e) => sum + (e.bullets ?? e.highlights ?? []).filter(b => b.length > 0).length, 0) / expWithBullets.length;
     depth += avgBullets >= 3 ? 8 : avgBullets >= 2 ? 5 : 2;
     if (avgBullets < 3) tips.push({ category: 'Depth', message: 'Aim for 3 bullets per experience — enough to show breadth without overwhelming', impact: 3 });
   }
 
   // Tagline quality (sweet spot: 50-200 chars)
-  const tagLen = data.tagline?.length || 0;
+  const tagLen = tagline.length;
   if (tagLen >= 50 && tagLen <= 200) depth += 4;
   else if (tagLen >= 30) depth += 2;
 
   // Stats have both label AND value filled
-  const completeStats = data.stats.filter(s => s.value.length > 0 && s.label.length > 0);
+  const completeStats = stats.filter(s => s.value.length > 0 && s.label.length > 0);
   depth += Math.min(completeStats.length, 4);
 
   // Bullet length sweet spot (80-200 chars = ideal)
@@ -179,17 +186,17 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
 
   const fieldKeywords = FIELD_SKILLS[field] || [];
   const allText = [
-    ...data.skills.map(s => s.toLowerCase()),
+    ...skills.map(s => s.toLowerCase()),
     ...allBullets.map(b => b.toLowerCase()),
-    data.role.toLowerCase(),
-    data.tagline?.toLowerCase() || '',
+    role.toLowerCase(),
+    tagline.toLowerCase(),
   ].join(' ');
 
   const matchedKeywords = fieldKeywords.filter(kw => allText.includes(kw));
   const keywordRatio = fieldKeywords.length > 0 ? matchedKeywords.length / Math.min(fieldKeywords.length, 10) : 0;
 
   // Skills matching field
-  const skillMatches = data.skills.filter(s => fieldKeywords.some(kw => s.toLowerCase().includes(kw)));
+  const skillMatches = skills.filter(s => fieldKeywords.some(kw => s.toLowerCase().includes(kw)));
   fieldRelevance += Math.min(skillMatches.length * 2, 8);
 
   // Experience titles/bullets matching field
@@ -210,16 +217,16 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
   // No empty/shell fields
   const hasEmptyFields = [
     data.name.length < 2,
-    data.role.length < 3,
-    data.experience.some(e => !e.company || !e.title),
-    data.education.some(e => !e.institution),
-    data.stats.some(s => (s.value && !s.label) || (!s.value && s.label)),
+    role.length < 3,
+    experience.some(e => !e.company || !e.title),
+    education.some(e => !e.institution),
+    stats.some(s => (s.value && !s.label) || (!s.value && s.label)),
   ].filter(Boolean).length;
   presentation += hasEmptyFields === 0 ? 5 : Math.max(0, 5 - hasEmptyFields * 2);
 
   // No duplicate skills
-  const uniqueSkills = new Set(data.skills.map(s => s.toLowerCase().trim()));
-  const dupeCount = data.skills.length - uniqueSkills.size;
+  const uniqueSkills = new Set(skills.map(s => s.toLowerCase().trim()));
+  const dupeCount = skills.length - uniqueSkills.size;
   presentation += dupeCount === 0 ? 3 : 1;
   if (dupeCount > 0) tips.push({ category: 'Presentation', message: `Remove ${dupeCount} duplicate skill(s) — duplicates look careless`, impact: 2 });
 
@@ -228,9 +235,9 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
   presentation += singleWordBullets.length === 0 ? 4 : Math.max(0, 4 - singleWordBullets.length);
 
   // Education has degree and year
-  const completeEdu = data.education.filter(e => e.institution && e.degree && e.year);
+  const completeEdu = education.filter(e => e.institution && e.degree && e.year);
   presentation += completeEdu.length > 0 ? 3 : 0;
-  if (data.education.length > 0 && completeEdu.length < data.education.length) {
+  if (education.length > 0 && completeEdu.length < education.length) {
     tips.push({ category: 'Presentation', message: 'Complete all education entries with institution, degree, and year', impact: 2 });
   }
 

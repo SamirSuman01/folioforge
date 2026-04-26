@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     siteName:    'ForgeFolio',
     title:       'ForgeFolio — Career Transition OS',
     description: 'From where you are to where you want to be — professionally.',
-    images: [{ url: '/og-default.png', width: 1200, height: 630 }],
+    images: [{ url: '/api/og', width: 1200, height: 630 }],
   },
   twitter: {
     card:  'summary_large_image',

@@ -1,67 +1,137 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { Slot } from "radix-ui"
+import * as React from 'react'
+import { Slot } from 'radix-ui'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
 
-import { cn } from "@/lib/utils"
+/* ─────────────────────────────────────────────────────────
+   BUTTON — Three variants, three sizes.
+
+   VARIANTS:
+   primary   — filled accent, for the ONE most important action per screen
+   secondary — outlined, for secondary actions
+   ghost     — no border/background, for tertiary inline actions
+
+   RULE: Never show two primary buttons simultaneously.
+   If two are visible, neither is primary.
+   ───────────────────────────────────────────────────────── */
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  // Base: shared across all variants
+  [
+    'inline-flex items-center justify-center gap-2',
+    'font-medium whitespace-nowrap select-none',
+    'border transition-colors',
+    'disabled:pointer-events-none disabled:opacity-50',
+    'focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2',
+    '[&_svg]:pointer-events-none [&_svg]:shrink-0',
+  ],
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
-        outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
-        ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
-        destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+        // Primary: filled, accent color
+        // Use for the single most important action on a screen
+        primary: [
+          'bg-accent text-text-inverse border-accent',
+          'hover:bg-accent-hover hover:border-accent-hover',
+          'active:bg-accent-active active:border-accent-active',
+        ],
+
+        // Secondary: outlined, transparent background
+        // Use for secondary actions alongside a primary
+        secondary: [
+          'bg-surface text-text-primary border-border-strong',
+          'hover:bg-background hover:border-border-strong',
+          'active:bg-border-subtle',
+        ],
+
+        // Ghost: no border, no background
+        // Use for tertiary actions, inline with content
+        ghost: [
+          'bg-transparent text-text-secondary border-transparent',
+          'hover:bg-border-subtle hover:text-text-primary',
+          'active:bg-border',
+        ],
+
+        // Destructive: for delete/remove actions only
+        destructive: [
+          'bg-error-subtle text-error border-error-border',
+          'hover:bg-error hover:text-text-inverse hover:border-error',
+          'active:bg-error-hover',
+        ],
       },
+
       size: {
-        default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        icon: "size-8",
-        "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm":
-          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-9",
+        sm: 'h-8 px-3 text-small rounded',           // 32px — compact contexts
+        md: 'h-10 px-4 text-body rounded',            // 40px — standard (default)
+        lg: 'h-11 px-5 text-body rounded',            // 44px — primary CTAs
+        icon: 'h-10 w-10 rounded',                    // 40px — icon-only
+        'icon-sm': 'h-8 w-8 rounded',                 // 32px — icon-only compact
       },
     },
+
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: 'primary',
+      size: 'md',
     },
   }
 )
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot.Root : "button"
-
-  return (
-    <Comp
-      data-slot="button"
-      data-variant={variant}
-      data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  // When true, renders as a loading state (spinner + disabled)
+  loading?: boolean
+  // When true, renders children as a Slot (for use with Next.js Link etc.)
+  asChild?: boolean
 }
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, loading, disabled, asChild, children, ...props }, ref) => {
+    // asChild path: merges button styles onto the child element (e.g. <Link>)
+    // Must pass a single element child — no spinner wrapper.
+    if (asChild) {
+      return (
+        <Slot.Root
+          ref={ref}
+          className={cn(buttonVariants({ variant, size }), className)}
+          {...props}
+        >
+          {children}
+        </Slot.Root>
+      )
+    }
+
+    return (
+      <button
+        ref={ref}
+        disabled={disabled || loading}
+        aria-busy={loading}
+        className={cn(buttonVariants({ variant, size }), className)}
+        {...props}
+      >
+        {loading && (
+          <svg
+            className="animate-spin"
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+        )}
+        {children}
+      </button>
+    )
+  }
+)
+
+Button.displayName = 'Button'
 
 export { Button, buttonVariants }

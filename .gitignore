@@ -35,3 +35,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local notes / scratch files (not part of the codebase)
+*.jsonl
+context.md
+context.txt
+17.md
+prompt.md.txt
+FRONTEND_SYSTEM.md
+"This is really valuable research. N.txt"
+This\ is\ really\ valuable\ research.\ N.txt
+PRD.md
+WIREFRAMES.md
+TECHNICAL_PLAN.md
+PRODUCT_DESIGN.md
+app_readme.md
+se.md
+four_topics_review.md
+supabase-schema.sql
+supabase/schema.sql
+
+.vercel

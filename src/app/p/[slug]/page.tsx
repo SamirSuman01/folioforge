@@ -1,63 +1,70 @@
-import { createClient } from '@supabase/supabase-js';
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import TemplateRenderer from '@/components/templates/TemplateRenderer';
-import AnalyticsTracker from '@/components/AnalyticsTracker';
-import OwnerBar from '@/components/OwnerBar';
-import type { Template, PortfolioData } from '@/lib/types';
+import { createClient } from '@supabase/supabase-js'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import TemplateRenderer from '@/components/templates/TemplateRenderer'
+import AnalyticsTracker from '@/components/AnalyticsTracker'
+import OwnerBar from '@/components/OwnerBar'
+import type { Template, PortfolioData } from '@/lib/types'
 
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  )
 }
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = getSupabase();
+  const { slug } = await params
+  const supabase = getSupabase()
+
   const { data } = await supabase
     .from('portfolios')
-    .select('data, slug')
-    .eq('slug', params.slug)
+    .select('data, slug, score')
+    .eq('slug', slug)
     .eq('is_published', true)
-    .single();
+    .single()
 
-  if (!data) return { title: 'Portfolio Not Found' };
+  if (!data) return { title: 'Portfolio Not Found' }
 
-  const portfolioData = data.data as PortfolioData;
+  const d = data.data as PortfolioData
+  const title       = `${d.name} — ${d.role}`
+  const description = d.tagline ?? d.about ?? ''
+  const baseUrl     = process.env.NEXT_PUBLIC_APP_URL ?? 'https://forgefolio.com'
+  const url         = `${baseUrl}/p/${data.slug}`
+  const scoreParam  = data.score ? `&score=${data.score}` : ''
+  const ogImage     = `${baseUrl}/api/og?title=${encodeURIComponent(d.name)}&sub=${encodeURIComponent(d.role ?? d.headline ?? '')}${scoreParam}`
+
   return {
-    title: `${portfolioData.name} — ${portfolioData.role} | Portfolio`,
-    description: portfolioData.tagline,
+    title,
+    description,
     openGraph: {
-      title: `${portfolioData.name} — ${portfolioData.role}`,
-      description: portfolioData.tagline,
-      type: 'profile',
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/p/${data.slug}`,
+      title, description, type: 'profile', url,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
-      card: 'summary_large_image',
-      title: `${portfolioData.name} — ${portfolioData.role}`,
-      description: portfolioData.tagline,
+      card:  'summary_large_image',
+      title, description,
+      images: [ogImage],
     },
-  };
+  }
 }
 
 export default async function PortfolioPage({ params }: PageProps) {
-  const supabase = getSupabase();
+  const { slug } = await params
+  const supabase = getSupabase()
+
   const { data: portfolio } = await supabase
     .from('portfolios')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('is_published', true)
-    .single();
+    .single()
 
-  if (!portfolio) {
-    notFound();
-  }
+  if (!portfolio) notFound()
 
   return (
     <>
@@ -71,8 +78,8 @@ export default async function PortfolioPage({ params }: PageProps) {
         portfolioId={portfolio.id}
         portfolioUserId={portfolio.user_id}
         slug={portfolio.slug}
-        viewCount={portfolio.view_count || 0}
+        viewCount={portfolio.view_count ?? 0}
       />
     </>
-  );
+  )
 }

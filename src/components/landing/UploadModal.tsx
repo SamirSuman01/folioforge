@@ -2,6 +2,9 @@
 
 import { useState, useRef, useCallback } from 'react';
 import type { Field } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Upload, FileText, X, Shield, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -18,8 +21,8 @@ export default function UploadModal({ isOpen, onClose, onComplete }: Props) {
 
   const handleFile = useCallback((f: File) => {
     setError('');
-    if (f.type !== 'application/pdf') { setError('Please upload a PDF file.'); return; }
-    if (f.size > 4 * 1024 * 1024) { setError('File too large (max 4MB).'); return; }
+    if (f.type !== 'application/pdf') { setError("We couldn't find a career signal in this file. Try a PDF or LinkedIn export instead."); return; }
+    if (f.size > 4 * 1024 * 1024) { setError("That file's a bit heavy. Keep it under 4MB — most resumes are well under 200KB."); return; }
     setFile(f);
   }, []);
 
@@ -29,13 +32,25 @@ export default function UploadModal({ isOpen, onClose, onComplete }: Props) {
     setError('');
     const formData = new FormData();
     formData.append('pdf', file);
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 60_000);
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const res = await fetch('/api/upload', { method: 'POST', body: formData, signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setError(data.error || "Something blocked the signal. Check your connection and try again.");
+        setUploading(false);
+        return;
+      }
       const data = await res.json();
-      if (!res.ok) { setError(data.error || 'Upload failed.'); setUploading(false); return; }
       onComplete(data.text, data.field);
-    } catch {
-      setError('Upload failed. Please try again.');
+    } catch (e) {
+      clearTimeout(timeoutId);
+      const msg = (e instanceof Error && e.name === 'AbortError')
+        ? 'Upload timed out — please try again.'
+        : 'Something blocked the signal. Check your connection and try again.';
+      setError(msg);
       setUploading(false);
     }
   }
@@ -50,48 +65,46 @@ export default function UploadModal({ isOpen, onClose, onComplete }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-5"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm px-5"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
-      <div className="bg-bg2 rounded-xl border border-white/[0.06] w-full max-w-md p-7 relative animate-[fadeInUp_0.25s_ease-out]">
+      <Card className="w-full max-w-md p-7 relative animate-fade-in-up shadow-xl">
         <button onClick={handleClose}
-          className="absolute top-3 right-3 text-bone4 hover:text-bone3 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/[0.04] transition-colors"
+          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground w-7 h-7 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
           aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          <X className="w-4 h-4" />
         </button>
 
         {uploading ? (
           <div className="py-10 text-center">
-            <div className="w-12 h-12 mx-auto mb-4 relative">
-              <svg className="animate-spin" width="48" height="48" viewBox="0 0 48 48">
-                <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="3" />
-                <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeDasharray="126" strokeDashoffset="94" className="text-accent" />
-              </svg>
+            <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-accent animate-spin" />
             </div>
-            <p className="text-bone text-sm font-medium mb-1">Extracting your experience</p>
-            <p className="text-bone4 text-xs">A few seconds...</p>
+            <p className="text-foreground text-sm font-medium mb-1">Extracting your experience</p>
+            <p className="text-muted-foreground text-xs">A few seconds...</p>
           </div>
         ) : (
           <>
-            <h2 className="text-lg font-bold text-bone mb-1">Upload your resume</h2>
-            <p className="text-bone4 text-sm mb-5">AI transforms it in under 60 seconds.</p>
+            <h2 className="text-lg font-bold text-foreground mb-1">Upload your resume</h2>
+            <p className="text-muted-foreground text-sm mb-5">AI transforms it in under 60 seconds.</p>
 
             {error && (
-              <div className="mb-4 p-2.5 rounded-lg bg-error/10 border border-error/15 text-error text-sm">{error}</div>
+              <div className="mb-4 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                {error}
+              </div>
             )}
 
             {file ? (
-              <div className="border border-accent/15 bg-accent/5 rounded-lg p-3.5 mb-4 flex items-center justify-between">
+              <div className="border border-accent/20 bg-accent/5 rounded-lg p-3.5 mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent">
-                    <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" /><path d="M14 2v6h6" />
-                  </svg>
+                  <FileText className="w-4 h-4 text-accent" />
                   <div>
-                    <p className="text-bone text-sm">{file.name}</p>
-                    <p className="text-bone4 text-[10px]">{(file.size / 1024).toFixed(0)} KB</p>
+                    <p className="text-foreground text-sm">{file.name}</p>
+                    <p className="text-muted-foreground text-[10px]">{(file.size / 1024).toFixed(0)} KB</p>
                   </div>
                 </div>
-                <button onClick={() => setFile(null)} className="text-bone4 hover:text-error transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                <button onClick={() => setFile(null)} className="text-muted-foreground hover:text-destructive transition-colors">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
@@ -101,35 +114,32 @@ export default function UploadModal({ isOpen, onClose, onComplete }: Props) {
                 onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
                 onClick={() => inputRef.current?.click()}
                 className={`border-2 border-dashed rounded-lg p-7 text-center cursor-pointer transition-all mb-4 ${
-                  dragging ? 'border-accent bg-accent/5' : 'border-white/[0.06] hover:border-white/[0.1]'
+                  dragging ? 'border-accent bg-accent/5' : 'border-border hover:border-muted-foreground/30'
                 }`}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-bone4 mx-auto mb-2">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                </svg>
-                <p className="text-bone text-sm">Drop PDF or click to browse</p>
-                <p className="text-bone4 text-[10px] mt-1">Max 4MB</p>
+                <Upload className="w-5 h-5 text-muted-foreground mx-auto mb-2" />
+                <p className="text-foreground text-sm">Drop PDF or click to browse</p>
+                <p className="text-muted-foreground text-[10px] mt-1">Max 4MB</p>
                 <input ref={inputRef} type="file" accept=".pdf" className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
               </div>
             )}
 
             {file && (
-              <button onClick={handleUpload}
-                className="w-full py-2.5 bg-accent text-bg font-semibold text-sm rounded-lg hover:bg-accent2 transition-colors">
+              <Button onClick={handleUpload} className="w-full">
                 Generate my portfolio
-              </button>
+              </Button>
             )}
 
-            <div className="mt-4 pt-4 border-t border-white/[0.04] flex items-center justify-center gap-4 text-bone4 text-[10px]">
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-center gap-4 text-muted-foreground text-[10px]">
               <span className="flex items-center gap-1">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success/50"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                <Shield className="w-2.5 h-2.5 text-green-500/60" />
                 Deleted after processing
               </span>
               <span>Free forever</span>
             </div>
           </>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

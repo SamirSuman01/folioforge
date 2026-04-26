@@ -30,10 +30,10 @@ export default function CleanLight({ data, showBadge = true }: Props) {
           <div className="flex flex-wrap justify-center gap-6 md:gap-12">
             {stats.map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-3xl font-bold text-[#1a1a2e]">
+                <div className="text-h1 font-bold text-[#1a1a2e]">
                   {stat.value}
                 </div>
-                <div className="text-xs text-[#1a1a2e]/40 mt-1 uppercase tracking-wider">
+                <div className="text-micro text-[#1a1a2e]/40 mt-1 uppercase tracking-wider">
                   {stat.label}
                 </div>
               </div>
@@ -46,19 +46,19 @@ export default function CleanLight({ data, showBadge = true }: Props) {
       {/* Experience */}
       {experience && experience.length > 0 && (
         <section data-section="experience" className="max-w-2xl mx-auto px-6 pb-12">
-          <h2 className="text-sm uppercase tracking-[0.15em] text-[#1a1a2e]/40 mb-8 text-center">
+          <h2 className="text-small uppercase tracking-[0.15em] text-[#1a1a2e]/40 mb-8 text-center">
             Experience
           </h2>
           <div className="space-y-8">
             {experience.map((exp, i) => (
               <div key={i} className="text-center">
                 <h3 className="text-lg font-semibold">{exp.company}</h3>
-                <p className="text-[#1a1a2e]/60 text-sm">
+                <p className="text-[#1a1a2e]/60 text-small">
                   {exp.title} · {exp.period}
                 </p>
                 <ul className="mt-3 space-y-1.5 max-w-lg mx-auto">
-                  {exp.bullets.map((bullet, j) => (
-                    <li key={j} className="text-[#1a1a2e]/70 text-sm leading-relaxed">
+                  {(exp.bullets ?? exp.highlights ?? []).map((bullet, j) => (
+                    <li key={j} className="text-[#1a1a2e]/70 text-small leading-relaxed">
                       {bullet}
                     </li>
                   ))}
@@ -73,14 +73,14 @@ export default function CleanLight({ data, showBadge = true }: Props) {
       {/* Education */}
       {education && education.length > 0 && (
         <section data-section="education" className="max-w-2xl mx-auto px-6 pb-12 text-center">
-          <h2 className="text-sm uppercase tracking-[0.15em] text-[#1a1a2e]/40 mb-8">
+          <h2 className="text-small uppercase tracking-[0.15em] text-[#1a1a2e]/40 mb-8">
             Education
           </h2>
           <div className="space-y-4">
             {education.map((edu, i) => (
               <div key={i}>
                 <h3 className="text-lg font-semibold">{edu.institution}</h3>
-                <p className="text-[#1a1a2e]/60 text-sm">
+                <p className="text-[#1a1a2e]/60 text-small">
                   {edu.degree} · {edu.year}
                 </p>
               </div>
@@ -93,14 +93,14 @@ export default function CleanLight({ data, showBadge = true }: Props) {
       {/* Skills */}
       {skills && skills.length > 0 && (
         <section data-section="skills" className="max-w-2xl mx-auto px-6 pb-16 text-center">
-          <h2 className="text-sm uppercase tracking-[0.15em] text-[#1a1a2e]/40 mb-8">
+          <h2 className="text-small uppercase tracking-[0.15em] text-[#1a1a2e]/40 mb-8">
             Skills
           </h2>
           <div className="flex flex-wrap justify-center gap-2">
             {skills.map((skill, i) => (
               <span
                 key={i}
-                className="px-3 py-1.5 text-sm text-[#1a1a2e]/70 border border-[#1a1a2e]/10 rounded"
+                className="px-3 py-1.5 text-small text-[#1a1a2e]/70 border border-[#1a1a2e]/10 rounded"
               >
                 {skill}
               </span>
@@ -113,10 +113,10 @@ export default function CleanLight({ data, showBadge = true }: Props) {
       {showBadge && (
         <footer className="text-center py-8 border-t border-[#1a1a2e]/5">
           <a
-            href={`${process.env.NEXT_PUBLIC_APP_URL || ''}?ref=badge`}
-            className="text-xs text-[#1a1a2e]/30 hover:text-[#1a1a2e]/50 transition-colors"
+            href={`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://forgefolio.com'}?ref=badge`}
+            className="text-micro text-[#1a1a2e]/30 hover:text-[#1a1a2e]/50 transition-colors"
           >
-            Built with FolioForge · Create your own portfolio →
+            Built with ForgeFolio · Create your own portfolio →
           </a>
         </footer>
       )}

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ForgeFolio — Design Mockup v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:#F8F5EF;
+  color:#0D0D0D;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ── Tokens ── */
+:root{
+  --ink:   #0D0D0D;
+  --ink2:  #3A3A3A;
+  --ink3:  #6B6B6B;
+  --ink4:  #A0A0A0;
+  --bg:    #F8F5EF;
+  --warm:  #F0EAE0;
+  --surf:  #FFFFFF;
+  --bd:    #E3DDD3;
+  --bd2:   #C8C0B4;
+  --blue:  #1A3FD4;
+  --bh:    #1535B8;
+  --bg2:   rgba(26,63,212,.08);
+  --bd3:   rgba(26,63,212,.18);
+  --green: #15803D;
+  --gbg:   #F0FDF4;
+  --gbd:   #BBF7D0;
+  --amber: #92400E;
+  --mono:  'IBM Plex Mono',monospace;
+  --r:     8px;
+  --rl:    14px;
+}
+
+/* ── Keyframes ── */
+@keyframes up    {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fin   {from{opacity:0}to{opacity:1}}
+@keyframes grow  {from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes pulse {0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes scan  {0%{top:-2px;opacity:0}8%{opacity:1}90%{opacity:.6}100%{top:105%;opacity:0}}
+
+/* ══════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:54px;
+  background:rgba(248,245,239,.92);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+}
+.nb{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;font-weight:500;color:var(--ink);}
+.nm{width:24px;height:24px;border-radius:5px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:-.05em;}
+.nl{display:flex;}
+.na{font-family:var(--mono);font-size:11px;color:var(--ink3);padding:6px 14px;letter-spacing:.03em;text-decoration:none;transition:color .15s;}
+.na:hover{color:var(--ink);}
+.nr{display:flex;align-items:center;gap:14px;}
+.nsi{font-size:13px;color:var(--ink3);text-decoration:none;transition:color .15s;}
+.nsi:hover{color:var(--ink);}
+.ncta{background:var(--blue);color:#fff;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:500;text-decoration:none;transition:all .15s;display:inline-block;}
+.ncta:hover{background:var(--bh);transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,63,212,.25);}
+.dot{width:6px;height:6px;border-radius:50%;background:#16A34A;box-shadow:0 0 7px rgba(22,163,74,.6);animation:pulse 2s ease-in-out infinite;flex-shrink:0;}
+
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+.hero{
+  min-height:100vh;
+  padding-top:54px;
+  display:grid;
+  grid-template-columns:1fr 420px;
+  align-items:center;
+  gap:52px;
+  max-width:1240px;
+  margin:0 auto;
+  padding-left:60px;
+  padding-right:60px;
+  position:relative;
+}
+/* subtle warm glow */
+.hero::after{
+  content:'';
+  position:absolute;top:20%;right:0;
+  width:560px;height:560px;
+  background:radial-gradient(ellipse,rgba(255,210,120,.3) 0%,transparent 68%);
+  pointer-events:none;z-index:0;
+}
+
+.hl{position:relative;z-index:2;}
+
+/* eyebrow */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--surf);border:1px solid var(--bd);
+  padding:4px 12px;border-radius:100px;
+  font-family:var(--mono);font-size:10px;color:var(--ink3);
+  letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:24px;
+  animation:up .5s ease .1s both;
+}
+
+/* Headline — outcome-first, three lines max */
+h1{
+  font-size:clamp(54px,6.8vw,92px);
+  font-weight:800;line-height:1.00;
+  letter-spacing:-.038em;
+  color:var(--ink);
+  margin-bottom:22px;
+  animation:up .6s ease .15s both;
+}
+h1 .soft{font-weight:300;color:var(--ink3);}
+h1 .accent{color:var(--blue);position:relative;}
+
+.sub{
+  font-size:16px;color:var(--ink3);
+  line-height:1.65;max-width:400px;
+  margin-bottom:32px;
+  font-weight:400;
+  animation:up .6s ease .22s both;
+}
+
+/* CTA */
+.actions{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  animation:up .6s ease .28s both;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--blue);color:#fff;
+  padding:14px 28px;border-radius:8px;
+  font-size:15px;font-weight:600;
+  text-decoration:none;letter-spacing:-.01em;
+  transition:all .18s;cursor:pointer;border:none;
+}
+.btn:hover{
+  background:var(--bh);
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 0 0 5px rgba(26,63,212,.12),0 8px 22px rgba(26,63,212,.28);
+}
+.btn:active{transform:translateY(0) scale(.98);transition-duration:.08s;}
+.barr{display:inline-block;transition:transform .2s ease;}
+.btn:hover .barr{transform:translateX(5px);}
+.ghost{
+  font-size:13px;color:var(--ink4);
+  text-decoration:none;transition:color .15s;
+}
+.ghost:hover{color:var(--ink3);}
+
+/* no-account note */
+.note{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink4);
+  letter-spacing:.04em;margin-top:12px;
+  animation:up .5s ease .34s both;
+  display:flex;align-items:center;gap:6px;
+}
+
+/* ── CARD ── */
+.hr{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:12px;animation:fin .7s ease .55s both;}
+
+.cs{position:relative;width:320px;}
+.cg2{position:absolute;width:100%;height:calc(100% - 70px);background:var(--warm);border:1px solid var(--bd);border-radius:var(--rl);top:24px;left:14px;transform:rotate(-5.5deg);box-shadow:1px 3px 10px rgba(0,0,0,.04);z-index:1;}
+.cg{position:absolute;width:100%;height:calc(100% - 44px);background:#fff;border:1px solid var(--bd);border-radius:var(--rl);top:14px;left:7px;transform:rotate(-2deg);box-shadow:1px 3px 10px rgba(0,0,0,.04);z-index:2;}
+.card{
+  position:relative;z-index:3;
+  background:#fff;
+  border:1px solid rgba(227,221,211,.9);
+  border-radius:var(--rl);
+  width:320px;overflow:hidden;
+  box-shadow:0 2px 4px rgba(70,40,10,.04),0 6px 18px rgba(70,40,10,.07),0 18px 48px rgba(50,30,8,.08),inset 0 1px 0 #fff;
+  transform:rotate(2deg);
+  transition:transform .3s ease,box-shadow .3s ease;
+}
+.card:hover{
+  transform:rotate(1deg) translateY(-4px);
+  box-shadow:0 4px 8px rgba(70,40,10,.06),0 12px 36px rgba(70,40,10,.1),0 28px 72px rgba(50,30,8,.1),inset 0 1px 0 #fff;
+}
+.scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(26,63,212,.55) 50%,transparent);pointer-events:none;z-index:20;top:-2px;opacity:0;animation:scan 1.8s ease-in-out 1.1s forwards;}
+
+.ch{padding:12px 18px 10px;border-bottom:1px solid #EEE8DF;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,#FAFAF7,#fff);}
+.chl{font-family:var(--mono);font-size:9.5px;color:var(--ink4);letter-spacing:.12em;text-transform:uppercase;}
+.chr{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:#16A34A;letter-spacing:.06em;text-transform:uppercase;}
+
+.ci{padding:13px 18px 11px;border-bottom:1px solid #EEE8DF;}
+.cr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:3px;}
+.cr:last-child{margin-bottom:0;}
+.cl{font-family:var(--mono);font-size:9.5px;color:var(--ink4);letter-spacing:.06em;}
+.cv{font-size:12px;color:var(--ink);font-weight:500;text-align:right;}
+.cv.blur{filter:blur(3.5px);color:var(--ink3);}
+
+.css2{padding:16px 18px 13px;border-bottom:1px solid #EEE8DF;display:flex;align-items:flex-end;justify-content:space-between;}
+.sl{font-family:var(--mono);font-size:9.5px;color:var(--ink4);letter-spacing:.06em;margin-bottom:3px;}
+.snw{display:flex;align-items:baseline;gap:3px;}
+.sn{font-family:var(--mono);font-size:54px;font-weight:700;color:#B45309;line-height:1;letter-spacing:-.04em;animation:fin .5s ease 1s both;}
+.sd{font-family:var(--mono);font-size:13px;color:var(--ink4);margin-bottom:4px;}
+.sr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.gb{background:#B45309;color:#fff;font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:4px;letter-spacing:.06em;}
+.sv{font-size:10px;color:var(--ink3);font-style:italic;text-align:right;max-width:120px;line-height:1.4;animation:fin .4s ease 1.3s both;}
+.sb{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--green);background:var(--gbg);border:1px solid var(--gbd);padding:3px 10px;border-radius:100px;white-space:nowrap;margin-top:2px;animation:fin .5s ease 2s both;}
+
+.cbd{padding:12px 18px;border-bottom:1px solid #EEE8DF;}
+.bdl{font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.bdr{display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:2px 0;border-radius:3px;transition:background .15s;}
+.bdr:last-child{margin-bottom:0;}
+.bdr:hover{background:#FAFAF5;}
+.bdn{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink3);width:80px;flex-shrink:0;}
+.bt{flex:1;height:2px;background:#EEE8DF;border-radius:1px;overflow:hidden;}
+.bf{height:100%;border-radius:1px;transform-origin:left;transform:scaleX(0);background:var(--blue);opacity:.7;}
+.bf.w{background:#B45309;opacity:1;}
+.bf.s{background:var(--green);opacity:1;}
+.bds{font-family:var(--mono);font-size:10px;color:var(--ink3);width:32px;text-align:right;flex-shrink:0;}
+
+.cf{padding:10px 18px 12px;background:#FFFAF3;border-top:1px solid #EEE8DF;}
+.fl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+.ft{font-size:11.5px;color:var(--ink2);line-height:1.55;margin-bottom:4px;}
+.fi{font-family:var(--mono);font-size:9px;color:var(--blue);font-weight:600;}
+
+.cc{font-family:var(--mono);font-size:10.5px;color:var(--ink4);letter-spacing:.04em;text-decoration:none;transition:color .15s;}
+.cc:hover{color:var(--ink3);}
+
+/* ══════════════════════════════════════════════
+   PROOF STRIP  — tight, numbers only
+══════════════════════════════════════════════ */
+.proof{
+  background:var(--surf);
+  border-top:1px solid var(--bd);
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:center;
+  gap:0;
+  overflow:hidden;
+}
+.ps{
+  display:flex;align-items:center;gap:10px;
+  padding:18px 40px;
+  border-right:1px solid var(--bd);
+}
+.ps:last-child{border-right:none;}
+.pn{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.04em;}
+.pl{font-size:12px;color:var(--ink3);line-height:1.4;max-width:100px;}
+.pdiv{width:1px;height:100%;background:var(--bd);align-self:stretch;}
+.logos{display:flex;align-items:center;gap:18px;padding:18px 40px;}
+.logo-tag{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink4);opacity:.65;letter-spacing:.02em;transition:opacity .15s;}
+.logo-tag:hover{opacity:1;}
+.logo-label{font-family:var(--mono);font-size:9.5px;color:var(--ink4);letter-spacing:.08em;text-transform:uppercase;margin-right:4px;}
+
+/* ══════════════════════════════════════════════
+   HOW IT WORKS  — 3 steps, breathing room
+══════════════════════════════════════════════ */
+.how{
+  max-width:1240px;margin:0 auto;
+  padding:88px 60px;
+  border-bottom:1px solid var(--bd);
+}
+.sec-label{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:10px;color:var(--ink4);
+  letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;
+}
+.sec-line{width:22px;height:1px;background:var(--bd2);}
+h2{
+  font-size:clamp(28px,3.6vw,46px);
+  font-weight:800;letter-spacing:-.032em;color:var(--ink);
+  line-height:1.1;margin-bottom:56px;
+}
+h2 span{color:var(--blue);}
+
+.steps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--bd);}
+.step{background:var(--bg);padding:36px 32px;}
+.sn2{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--ink4);letter-spacing:.08em;margin-bottom:18px;}
+.st{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.02em;margin-bottom:8px;}
+.sd2{font-size:13.5px;color:var(--ink3);line-height:1.6;margin-bottom:14px;}
+.stag{font-family:var(--mono);font-size:9.5px;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border:1px solid var(--bd);border-radius:100px;display:inline-block;}
+
+.up-prev{margin-top:18px;border:1.5px dashed var(--bd2);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:9px;background:var(--warm);}
+.up-arrow{font-size:16px;color:var(--blue);}
+.up-text{font-size:12px;color:var(--ink3);}
+
+.sc-prev{margin-top:18px;}
+.sc-big{font-family:var(--mono);font-size:34px;font-weight:700;color:#B45309;letter-spacing:-.04em;}
+.sc-of{font-family:var(--mono);font-size:13px;color:var(--ink4);}
+.sc-bar{margin-top:6px;height:3px;background:#EEE8DF;border-radius:2px;overflow:hidden;position:relative;}
+.sc-fill{position:absolute;left:0;top:0;bottom:0;width:82%;background:#B45309;border-radius:2px;transform-origin:left;transform:scaleX(0);animation:grow .8s cubic-bezier(.16,1,.3,1) .4s forwards;}
+
+.mods{margin-top:16px;display:flex;flex-wrap:wrap;gap:5px;}
+.mod{font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--blue);background:var(--bg2);border:1px solid var(--bd3);padding:3px 8px;border-radius:4px;}
+
+/* ══════════════════════════════════════════════
+   PROOF ROW  — one compact row: stat + quote
+══════════════════════════════════════════════ */
+.proof-row{
+  background:var(--ink);
+  padding:72px 60px;
+}
+.proof-row-inner{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.07);}
+.pr-stat{
+  background:var(--ink);padding:40px 44px;
+  display:flex;flex-direction:column;gap:6px;
+  border-right:1px solid rgba(255,255,255,.07);
+}
+.pr-n{font-family:var(--mono);font-size:52px;font-weight:700;color:#fff;letter-spacing:-.04em;line-height:1;}
+.pr-n span{font-size:24px;color:rgba(255,255,255,.35);margin-left:2px;}
+.pr-l{font-size:14px;color:rgba(255,255,255,.4);line-height:1.55;}
+.pr-delta{
+  background:var(--ink);padding:40px 44px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.pr-delta-nums{display:flex;align-items:baseline;gap:8px;}
+.pr-from{font-family:var(--mono);font-size:32px;font-weight:300;color:rgba(255,255,255,.25);}
+.pr-arr{font-family:var(--mono);font-size:16px;color:rgba(255,255,255,.2);}
+.pr-to{font-family:var(--mono);font-size:32px;font-weight:700;color:#4ADE80;}
+.pr-dlbl{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.08em;align-self:center;}
+.pr-result{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.01em;}
+.pr-q{font-size:13.5px;color:rgba(255,255,255,.45);line-height:1.65;font-style:italic;}
+.pr-who{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.28);letter-spacing:.04em;}
+
+/* ══════════════════════════════════════════════
+   FEATURES  — 4 cards, objection-framed
+══════════════════════════════════════════════ */
+.feats{
+  max-width:1240px;margin:0 auto;
+  padding:88px 60px;
+  border-bottom:1px solid var(--bd);
+}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bd);}
+.feat{
+  background:var(--bg);padding:28px 32px;
+  display:flex;flex-direction:column;gap:6px;
+  transition:background .15s;
+}
+.feat:hover{background:var(--surf);}
+.feat-top{display:flex;align-items:center;gap:10px;}
+.feat-icon{font-size:17px;flex-shrink:0;}
+.feat-name{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-.01em;}
+.pro-pill{font-family:var(--mono);font-size:8.5px;font-weight:500;color:var(--blue);background:var(--bg2);border:1px solid var(--bd3);padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;}
+.feat-desc{font-size:13px;color:var(--ink3);line-height:1.65;padding-left:27px;}
+
+/* ══════════════════════════════════════════════
+   PRICING  — two cards, clean
+══════════════════════════════════════════════ */
+.pricing{
+  max-width:1240px;margin:0 auto;
+  padding:88px 60px;
+  border-bottom:1px solid var(--bd);
+}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:680px;}
+.plan{border:1px solid var(--bd);border-radius:var(--rl);padding:32px;}
+.plan.pro{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 8px 30px rgba(26,63,212,.1);}
+.plan-lbl{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.plan-badge{background:var(--blue);color:#fff;font-size:8.5px;padding:2px 6px;border-radius:3px;letter-spacing:.06em;}
+.plan-price{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--ink);letter-spacing:-.04em;line-height:1;}
+.plan-unit{font-size:13px;color:var(--ink4);font-weight:400;margin-left:2px;}
+.plan-per{font-family:var(--mono);font-size:10.5px;color:var(--ink4);margin-top:5px;margin-bottom:18px;}
+.plan-urgent{font-family:var(--mono);font-size:10px;color:var(--blue);margin-bottom:4px;}
+.plan-anch{font-family:var(--mono);font-size:9.5px;color:var(--ink4);opacity:.7;margin-bottom:18px;}
+.plan-div{height:1px;background:var(--bd);margin-bottom:18px;}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.plan-feat{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:var(--ink2);line-height:1.5;}
+.pfi{font-family:var(--mono);font-size:11px;flex-shrink:0;margin-top:1px;}
+.pfi.b{color:var(--blue);font-weight:600;}
+.pfi.m{color:var(--ink4);}
+.plan-cta{display:block;width:100%;text-align:center;margin-top:22px;padding:12px;border-radius:var(--r);font-size:14px;font-weight:600;text-decoration:none;transition:all .18s;cursor:pointer;}
+.plan-cta.free{border:1.5px solid var(--bd2);color:var(--ink2);background:transparent;}
+.plan-cta.free:hover{border-color:var(--ink3);color:var(--ink);}
+.plan-cta.go{background:var(--blue);color:#fff;}
+.plan-cta.go:hover{background:var(--bh);box-shadow:0 4px 16px rgba(26,63,212,.25);transform:translateY(-1px);}
+.plan-foot{font-family:var(--mono);font-size:9.5px;color:var(--ink4);text-align:center;margin-top:10px;line-height:1.5;}
+
+/* ══════════════════════════════════════════════
+   FINAL CTA
+══════════════════════════════════════════════ */
+.fcta{
+  background:linear-gradient(140deg,#0D0D0D 0%,#171728 100%);
+  padding:96px 60px;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.fcta::before{
+  content:'';
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:600px;height:360px;
+  background:radial-gradient(ellipse,rgba(26,63,212,.22) 0%,transparent 68%);
+  pointer-events:none;
+}
+.fc-in{position:relative;z-index:1;max-width:580px;margin:0 auto;}
+.fc-lbl{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.12em;text-transform:uppercase;margin-bottom:18px;}
+.fc-h{font-size:clamp(40px,5.5vw,70px);font-weight:800;letter-spacing:-.04em;color:#fff;line-height:1.02;margin-bottom:20px;}
+.fc-h em{font-style:italic;color:rgba(255,255,255,.38);}
+.fc-sub{font-size:15px;color:rgba(255,255,255,.4);line-height:1.7;margin-bottom:36px;}
+.fc-live{display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.03em;margin-bottom:36px;}
+.fc-btns{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.fc-btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);padding:15px 36px;border-radius:8px;font-size:15px;font-weight:700;text-decoration:none;transition:all .18s;}
+.fc-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,255,255,.18);}
+.fc-ghost{font-size:12.5px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .15s;}
+.fc-ghost:hover{color:rgba(255,255,255,.55);}
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+footer{
+  background:#0D0D0D;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding:24px 60px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
+}
+.fb{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.35);}
+.fb span{color:rgba(255,255,255,.55);}
+.flinks{display:flex;gap:22px;}
+.flink{font-family:var(--mono);font-size:10.5px;color:rgba(255,255,255,.28);text-decoration:none;transition:color .15s;letter-spacing:.04em;}
+.flink:hover{color:rgba(255,255,255,.55);}
+.fcopy{font-family:var(--mono);font-size:9.5px;color:rgba(255,255,255,.18);letter-spacing:.04em;}
+
+/* ══════════════════════════════════════════════
+   STICKY BAR
+══════════════════════════════════════════════ */
+.sticky{
+  position:fixed;bottom:0;left:0;right:0;z-index:90;
+  background:rgba(13,13,13,.96);
+  backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,.07);
+  padding:11px 48px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+}
+.sticky-txt{font-size:13.5px;color:rgba(255,255,255,.55);}
+.sticky-txt strong{color:#fff;}
+.sticky-cta{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.sticky-cta:hover{background:var(--bh);box-shadow:0 4px 14px rgba(26,63,212,.3);}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nb">
+    <div class="nm">FF</div>
+    <span style="color:var(--bd2)">·</span>
+    ForgeFolio
+  </div>
+  <div class="nl">
+    <a href="#how" class="na">How it works</a>
+    <a href="#features" class="na">Features</a>
+    <a href="#pricing" class="na">Pricing</a>
+  </div>
+  <div class="nr">
+    <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--ink4);letter-spacing:.06em;">
+      <div class="dot"></div>Free to start
+    </div>
+    <a href="#" class="nsi">Sign in</a>
+    <a href="#" class="ncta">Get free score</a>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+
+  <div class="hl">
+    <div class="eyebrow">
+      <div class="dot"></div>
+      18,214 resumes scored this week
+    </div>
+
+    <h1>
+      Land the interview,<br/>
+      <span class="soft">not the</span> <span class="accent">rejection</span><br/>
+      email.
+    </h1>
+
+    <p class="sub">
+      75% of resumes are filtered before a human reads them. ForgeFolio scores yours, finds the gaps, and builds a portfolio recruiters can actually find.
+    </p>
+
+    <div class="actions">
+      <a href="#" class="btn">
+        Analyse my resume
+        <span class="barr">→</span>
+      </a>
+      <a href="#" class="ghost">See a live report →</a>
+    </div>
+
+    <div class="note">
+      <div class="dot"></div>
+      No account needed · Resume not stored · 60 seconds
+    </div>
+  </div>
+
+  <!-- Signal Card -->
+  <div class="hr">
+    <div class="cs">
+      <div class="cg2"></div>
+      <div class="cg"></div>
+      <div class="card">
+        <div class="scan"></div>
+
+        <div class="ch">
+          <span class="chl">Signal Report</span>
+          <div class="chr"><div class="dot"></div>Live analysis</div>
+        </div>
+
+        <div class="ci">
+          <div class="cr"><span class="cl">Name</span><span class="cv blur">Rahul Sharma</span></div>
+          <div class="cr"><span class="cl">Role</span><span class="cv">SDE-1 · Fresher</span></div>
+          <div class="cr"><span class="cl">College</span><span class="cv blur">VIT Vellore · CSE</span></div>
+        </div>
+
+        <div class="css2">
+          <div>
+            <div class="sl">SCORE</div>
+            <div class="snw">
+              <span class="sn">72</span>
+              <span class="sd">/100</span>
+            </div>
+          </div>
+          <div class="sr">
+            <span class="gb">B</span>
+            <div class="sv">3 gaps blocking shortlists</div>
+            <div class="sb">Top 41%</div>
+          </div>
+        </div>
+
+        <div class="cbd">
+          <div class="bdl">Breakdown</div>
+          <div class="bdr"><span class="bdn">Completeness</span><div class="bt"><div class="bf w" style="width:64%;animation:grow .8s cubic-bezier(.16,1,.3,1) 1.0s forwards;"></div></div><span class="bds">16/25</span></div>
+          <div class="bdr"><span class="bdn">Impact</span><div class="bt"><div class="bf" style="width:84%;animation:grow .8s cubic-bezier(.16,1,.3,1) 1.08s forwards;"></div></div><span class="bds">21/25</span></div>
+          <div class="bdr"><span class="bdn">Depth</span><div class="bt"><div class="bf w" style="width:60%;animation:grow .8s cubic-bezier(.16,1,.3,1) 1.16s forwards;"></div></div><span class="bds">12/20</span></div>
+          <div class="bdr"><span class="bdn">Relevance</span><div class="bt"><div class="bf s" style="width:87%;animation:grow .8s cubic-bezier(.16,1,.3,1) 1.24s forwards;"></div></div><span class="bds">13/15</span></div>
+          <div class="bdr"><span class="bdn">Presentation</span><div class="bt"><div class="bf w" style="width:67%;animation:grow .8s cubic-bezier(.16,1,.3,1) 1.32s forwards;"></div></div><span class="bds">10/15</span></div>
+        </div>
+
+        <div class="cf">
+          <div class="fl">Highest Impact Fix</div>
+          <div class="ft">Add quantified outcomes to 3 bullets — "reduced load time 40%" beats "improved performance"</div>
+          <div class="fi">→ expected +8 to +12 pts</div>
+        </div>
+      </div>
+    </div>
+    <a href="#" class="cc">See a live report →</a>
+  </div>
+
+</section>
+
+<!-- ═══════════ PROOF STRIP ═══════════ -->
+<div class="proof">
+  <div class="ps">
+    <div>
+      <div class="pn">18,214</div>
+      <div class="pl">Resumes scored this week</div>
+    </div>
+  </div>
+  <div class="ps">
+    <div>
+      <div class="pn">+31<span style="font-size:14px;color:var(--ink4);"> pt</span></div>
+      <div class="pl">Avg score lift after one pass</div>
+    </div>
+  </div>
+  <div class="ps">
+    <div>
+      <div class="pn">3.6<span style="font-size:14px;color:var(--ink4);">×</span></div>
+      <div class="pl">More callbacks vs unoptimised</div>
+    </div>
+  </div>
+  <div class="logos">
+    <span class="logo-label">Users now at</span>
+    <span class="logo-tag">Razorpay</span>
+    <span class="logo-tag">Zepto</span>
+    <span class="logo-tag">PhonePe</span>
+    <span class="logo-tag">CRED</span>
+    <span class="logo-tag">Google</span>
+  </div>
+</div>
+
+<!-- ═══════════ HOW IT WORKS ═══════════ -->
+<div id="how" class="how">
+  <div class="sec-label"><div class="sec-line"></div>How it works</div>
+  <h2>Three steps.<br/><span>Under 90 seconds.</span></h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="sn2">01 ·</div>
+      <div class="st">Upload your resume</div>
+      <p class="sd2">Drop your PDF, paste a LinkedIn URL, or type it in. Parsed in under 30 seconds.</p>
+      <div class="stag">PDF · LinkedIn · Plain text</div>
+      <div class="up-prev">
+        <span class="up-arrow">↑</span>
+        <span class="up-text">Paste your resume or LinkedIn URL</span>
+      </div>
+    </div>
+
+    <div class="step" style="background:var(--surf);">
+      <div class="sn2">02 ·</div>
+      <div class="st">Get your signal score</div>
+      <p class="sd2">5 dimensions. 100 points. Completeness, Impact, Depth, Relevance, Presentation.</p>
+      <div class="stag">Results in ~60 seconds</div>
+      <div class="sc-prev">
+        <span class="sc-big">82</span><span class="sc-of"> / 100</span>
+        <div class="sc-bar"><div class="sc-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="sn2">03 ·</div>
+      <div class="st">Use your career OS</div>
+      <p class="sd2">Portfolio live. Gaps identified. Warm paths mapped. Running continuously.</p>
+      <div class="stag">Continuous intelligence</div>
+      <div class="mods">
+        <span class="mod">Gap analysis</span>
+        <span class="mod">Market intel</span>
+        <span class="mod">Warm paths</span>
+        <span class="mod">ATS check</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PROOF ROW (dark) ═══════════ -->
+<div class="proof-row">
+  <div class="proof-row-inner">
+    <!-- Left: stat -->
+    <div class="pr-stat">
+      <div class="pr-n">64<span>%</span></div>
+      <div class="pr-l">Got shortlisted within 45 days after optimising · verified cohort of 18,000+</div>
+    </div>
+    <!-- Right: testimonial with delta -->
+    <div class="pr-delta">
+      <div class="pr-result">Interview in 1 week</div>
+      <div class="pr-delta-nums">
+        <span class="pr-from">58</span>
+        <span class="pr-arr">→</span>
+        <span class="pr-to">81</span>
+        <span class="pr-dlbl">signal score</span>
+      </div>
+      <div class="pr-q">"Applied to Razorpay at 58. One pass through ForgeFolio, score hit 81. Got the interview that week."</div>
+      <div class="pr-who">Rohan S. · SDE-1 · Razorpay</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FEATURES ═══════════ -->
+<div id="features" class="feats">
+  <div class="sec-label"><div class="sec-line"></div>What you get</div>
+  <h2>Every tool kills<br/><span>a specific fear.</span></h2>
+
+  <div class="feat-grid">
+    <div class="feat">
+      <div class="feat-top">
+        <span class="feat-icon">📊</span>
+        <span class="feat-name">Signal Score — know your exact number</span>
+      </div>
+      <p class="feat-desc">"Am I good enough to apply?" — 100-point analysis tells you exactly what to fix before you hit send.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-top">
+        <span class="feat-icon">🎯</span>
+        <span class="feat-name">JD filter check <span class="pro-pill">Pro</span></span>
+      </div>
+      <p class="feat-desc">"Why am I getting filtered?" — Paste any JD, see your exact keyword gaps. Without it, you apply blind.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-top">
+        <span class="feat-icon">₹</span>
+        <span class="feat-name">Real salary data <span class="pro-pill">Pro</span></span>
+      </div>
+      <p class="feat-desc">"Is this offer fair?" — Salary bands from live JDs, not surveys from 2022. Know before you negotiate.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-top">
+        <span class="feat-icon">🔗</span>
+        <span class="feat-name">Warm paths to referrals <span class="pro-pill">Pro</span></span>
+      </div>
+      <p class="feat-desc">"I have no connections." — Alumni paths to your exact target companies, ranked by strength. Beats cold applies every time.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PRICING ═══════════ -->
+<div id="pricing" class="pricing">
+  <div class="sec-label"><div class="sec-line"></div>Pricing</div>
+  <h2>Free to start.<br/><span>Upgrade when obvious.</span></h2>
+
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-lbl">Free</div>
+      <div class="plan-price">₹0<span class="plan-unit">/ forever</span></div>
+      <div class="plan-per">No credit card · always free</div>
+      <div class="plan-div"></div>
+      <ul class="plan-feats">
+        <li class="plan-feat"><span class="pfi m">—</span>1 portfolio with public URL</li>
+        <li class="plan-feat"><span class="pfi m">—</span>Full AI generation</li>
+        <li class="plan-feat"><span class="pfi m">—</span>Signal Score · 100-point analysis</li>
+        <li class="plan-feat"><span class="pfi m">—</span>Basic analytics · 7 days</li>
+        <li class="plan-feat"><span class="pfi m">—</span>3 AI improvements / day</li>
+      </ul>
+      <a href="#" class="plan-cta free">Get your free score →</a>
+    </div>
+
+    <div class="plan pro">
+      <div class="plan-lbl">Pro <span class="plan-badge">Most popular</span></div>
+      <div class="plan-price">₹299<span class="plan-unit">/ mo</span></div>
+      <div class="plan-per">cancel anytime · beta pricing</div>
+      <div class="plan-urgent">Locked in for life →</div>
+      <div class="plan-anch">Less than one month of Naukri Premium</div>
+      <div class="plan-div"></div>
+      <ul class="plan-feats">
+        <li class="plan-feat"><span class="pfi b">+</span>JD filter check — stop applying blind</li>
+        <li class="plan-feat"><span class="pfi b">+</span>Skill gaps + market data + warm paths</li>
+        <li class="plan-feat"><span class="pfi b">+</span>Unlimited portfolios + AI improvements</li>
+        <li class="plan-feat"><span class="pfi b">+</span>Full analytics · company identification</li>
+        <li class="plan-feat" style="color:var(--ink4);font-size:12px;"><span class="pfi m">+</span>and 4 more →</li>
+      </ul>
+      <a href="#" class="plan-cta go">Start 7-day free trial →</a>
+      <div class="plan-foot">Most engineers upgrade after their first rejected application</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FINAL CTA ═══════════ -->
+<div class="fcta">
+  <div class="fc-in">
+    <div class="fc-lbl">18,000+ engineers · Free · 60 seconds</div>
+    <h2 class="fc-h">
+      Your score is<br/>
+      <em>60 seconds</em><br/>
+      away.
+    </h2>
+    <p class="fc-sub">Join 18,000+ engineers who refused to be filtered out.</p>
+    <div class="fc-live">
+      <div class="dot"></div>
+      486 portfolios scored today · someone just hit 79 — moments ago
+    </div>
+    <div class="fc-btns">
+      <a href="#" class="fc-btn">Score my resume free →</a>
+      <a href="#" class="fc-ghost">Watch ForgeFolio score a real resume →</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="fb">FF · <span>ForgeFolio</span> — Career OS</span>
+  <div class="flinks">
+    <a href="#" class="flink">Privacy</a>
+    <a href="#" class="flink">Terms</a>
+    <a href="mailto:hello@forgefolio.in" class="flink">Contact</a>
+  </div>
+  <span class="fcopy">© 2025 · Every engineer deserves to be seen.</span>
+</footer>
+
+<!-- STICKY BAR -->
+<div class="sticky">
+  <div class="sticky-txt">
+    <strong>75% of resumes never reach a human.</strong> Know if yours will — free, 60 seconds.
+  </div>
+  <a href="#" class="sticky-cta">Analyse my resume →</a>
+</div>
+
+</body>
+</html>

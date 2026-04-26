@@ -6,19 +6,15 @@ import { useEffect, useRef } from 'react';
 export const TRACKED_SECTIONS = ['stats', 'experience', 'education', 'skills'] as const;
 export type TrackedSection = (typeof TRACKED_SECTIONS)[number];
 
-interface SectionTimes {
-  [key: string]: number; // section name → seconds spent
-}
-
 export default function AnalyticsTracker({ portfolioId }: { portfolioId: string }) {
   const sectionTimers = useRef<Map<string, number>>(new Map()); // section → timestamp when entered
-  const sectionTotals = useRef<SectionTimes>({});
+  const sectionTotals = useRef<Record<string, number>>({});
   const isHidden = useRef(false);
 
   useEffect(() => {
     const startTime = Date.now();
 
-    // Track initial page view
+    // Track initial page view — fire-and-forget, non-critical
     fetch('/api/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -26,7 +22,7 @@ export default function AnalyticsTracker({ portfolioId }: { portfolioId: string 
         portfolioId,
         referrer: document.referrer || 'direct',
       }),
-    });
+    }).catch(() => {});
 
     // ── Section-level tracking with IntersectionObserver ──
     const observer = new IntersectionObserver(
@@ -81,7 +77,6 @@ export default function AnalyticsTracker({ portfolioId }: { portfolioId: string 
         [JSON.stringify({
           portfolioId,
           duration,
-          sectionTimes: sectionTotals.current,
           type: 'duration_update',
         })],
         { type: 'application/json' }

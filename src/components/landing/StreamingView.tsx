@@ -7,8 +7,10 @@ import { createClient } from '@/lib/supabase-client';
 import TemplateRenderer from '@/components/templates/TemplateRenderer';
 import ScoreReveal from '@/components/ScoreReveal';
 import { scorePortfolio } from '@/lib/portfolio-score';
+import { Button } from '@/components/ui/button';
 import type { Field, Template, PortfolioData } from '@/lib/types';
 import { FIELD_LABELS, TEMPLATES } from '@/lib/types';
+import { ArrowLeft, Check } from 'lucide-react';
 
 interface Props {
   linkedinText: string;
@@ -28,8 +30,8 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
     cs: 'system-dark',
     design: 'split-editorial',
     marketing: 'clean-light',
-    finance: 'broadsheet',
-    research: 'warm-editorial',
+    business: 'broadsheet',
+    other: 'warm-editorial',
   };
 
   const [field, setField] = useState<Field>(detectedField || 'cs');
@@ -60,9 +62,11 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
 
   useEffect(() => {
     if (portfolioData) {
-      sessionStorage.setItem('ff_portfolio_data', JSON.stringify(portfolioData));
-      sessionStorage.setItem('ff_linkedin_text', linkedinText);
-      sessionStorage.setItem('ff_field', field);
+      try {
+        sessionStorage.setItem('ff_portfolio_data', JSON.stringify(portfolioData));
+        sessionStorage.setItem('ff_linkedin_text', linkedinText);
+        sessionStorage.setItem('ff_field', field);
+      } catch { /* private/incognito mode — non-fatal, save flow still works */ }
       const t = setTimeout(() => setShowScore(true), 800);
       return () => clearTimeout(t);
     }
@@ -114,26 +118,26 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
   // Field picker
   if (showFieldPicker) {
     return (
-      <div className="fixed inset-0 z-50 bg-bg flex items-center justify-center px-5">
+      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center px-5">
         <div className="max-w-md text-center animate-[fadeInUp_0.4s_ease-out]">
           <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center mx-auto mb-5">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent"><path d="M12 20V10M6 20V4M18 20v-6" /></svg>
           </div>
-          <h2 className="text-xl font-bold text-bone mb-1.5 font-display">What&apos;s your field?</h2>
-          <p className="text-bone4 text-sm mb-7">This helps our AI write for your specific industry.</p>
+          <h2 className="text-xl font-bold text-foreground mb-1.5">What&apos;s your field?</h2>
+          <p className="text-muted-foreground text-sm mb-7">This helps our AI write for your specific industry.</p>
           <div className="flex flex-wrap justify-center gap-2">
             {(Object.entries(FIELD_LABELS) as [Field, string][]).map(([f, label]) => (
               <button
                 key={f}
                 onClick={() => { setField(f); setTemplate(FIELD_TEMPLATE_REC[f]); setShowFieldPicker(false); }}
-                className="px-5 py-2.5 bg-bg2 border border-white/[0.06] rounded-xl text-bone text-sm hover:border-accent/30 hover:text-accent transition-all"
+                className="px-5 py-2.5 bg-secondary border border-border rounded-xl text-foreground text-sm hover:border-accent/30 hover:text-accent transition-all"
               >
                 {label}
               </button>
             ))}
           </div>
-          <button onClick={onBack} className="mt-7 text-bone4 text-sm hover:text-bone3 transition-colors flex items-center gap-1.5 mx-auto">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+          <button onClick={onBack} className="mt-7 text-muted-foreground text-sm hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto">
+            <ArrowLeft className="size-3.5" />
             Go back
           </button>
         </div>
@@ -145,11 +149,11 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
   const isDone = portfolioData && !isStreaming;
 
   return (
-    <div className="fixed inset-0 z-50 bg-bg flex flex-col">
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {/* Top bar */}
-      <div className="border-b border-white/[0.04] px-4 lg:px-5 py-2.5 flex items-center justify-between shrink-0">
-        <button onClick={onBack} className="text-bone4 hover:text-bone3 text-sm transition-colors flex items-center gap-1.5">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+      <div className="border-b border-border px-4 lg:px-5 py-2.5 flex items-center justify-between shrink-0">
+        <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm transition-colors flex items-center gap-1.5">
+          <ArrowLeft className="size-3.5" />
           <span className="hidden sm:inline">Back</span>
         </button>
 
@@ -161,20 +165,20 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
                   <div key={i} className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
                 ))}
               </div>
-              <span className="text-bone4 text-xs hidden sm:block">{STREAMING_STEPS[streamStep]}...</span>
+              <span className="text-muted-foreground text-xs hidden sm:block">{STREAMING_STEPS[streamStep]}...</span>
             </>
           ) : isDone ? (
             <>
-              <span className="w-1.5 h-1.5 rounded-full bg-success" />
-              <span className="text-success text-xs">Ready</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-green-500 text-xs">Ready</span>
             </>
           ) : null}
         </div>
 
         {isDone ? (
           <div className="flex lg:hidden gap-1">
-            <button onClick={() => setMobileTab('preview')} className={`px-2.5 py-1 rounded text-xs transition-colors ${mobileTab === 'preview' ? 'bg-bg2 text-bone' : 'text-bone4'}`}>Preview</button>
-            <button onClick={() => setMobileTab('score')} className={`px-2.5 py-1 rounded text-xs transition-colors ${mobileTab === 'score' ? 'bg-bg2 text-bone' : 'text-bone4'}`}>Score</button>
+            <button onClick={() => setMobileTab('preview')} className={`px-2.5 py-1 rounded text-xs transition-colors ${mobileTab === 'preview' ? 'bg-secondary text-foreground' : 'text-muted-foreground'}`}>Preview</button>
+            <button onClick={() => setMobileTab('score')} className={`px-2.5 py-1 rounded text-xs transition-colors ${mobileTab === 'score' ? 'bg-secondary text-foreground' : 'text-muted-foreground'}`}>Score</button>
           </div>
         ) : <div className="w-16" />}
       </div>
@@ -186,14 +190,14 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
           {error ? (
             <div className="flex items-center justify-center h-full px-8">
               <div className="text-center animate-[fadeInUp_0.4s_ease-out]">
-                <div className="w-10 h-10 rounded-xl bg-error/10 border border-error/15 flex items-center justify-center mx-auto mb-4">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-error"><circle cx="12" cy="12" r="10" /><path d="M15 9l-6 6M9 9l6 6" /></svg>
+                <div className="w-10 h-10 rounded-xl bg-destructive/10 border border-destructive/15 flex items-center justify-center mx-auto mb-4">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-destructive"><circle cx="12" cy="12" r="10" /><path d="M15 9l-6 6M9 9l6 6" /></svg>
                 </div>
-                <p className="text-error text-sm mb-1.5 font-medium">Generation failed</p>
-                <p className="text-bone4 text-xs mb-5">{error}</p>
-                <button onClick={() => startStreaming(linkedinText, field)} className="px-5 py-2 bg-accent text-bg text-sm rounded-lg hover:bg-accent2 transition-colors font-medium">
+                <p className="text-destructive text-sm mb-1.5 font-medium">Generation failed</p>
+                <p className="text-muted-foreground text-xs mb-5">{error}</p>
+                <Button onClick={() => startStreaming(linkedinText, field)} size="sm">
                   Try again
-                </button>
+                </Button>
               </div>
             </div>
           ) : previewData ? (
@@ -210,23 +214,23 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
                       }`}
                     >
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                        i < streamStep ? 'bg-success/10' : i === streamStep ? 'bg-accent/10' : 'bg-white/[0.04]'
+                        i < streamStep ? 'bg-green-500/10' : i === streamStep ? 'bg-accent/10' : 'bg-secondary'
                       }`}>
                         {i < streamStep ? (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-success"><path d="M20 6L9 17l-5-5" /></svg>
+                          <Check className="size-2.5 text-green-500" strokeWidth={3} />
                         ) : i === streamStep ? (
                           <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                         ) : (
-                          <div className="w-1.5 h-1.5 rounded-full bg-bone4/30" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
                         )}
                       </div>
-                      <span className={`text-sm ${i === streamStep ? 'text-bone' : i < streamStep ? 'text-bone3' : 'text-bone4'}`}>
+                      <span className={`text-sm ${i === streamStep ? 'text-foreground' : i < streamStep ? 'text-foreground/70' : 'text-muted-foreground'}`}>
                         {step}
                       </span>
                     </div>
                   ))}
                 </div>
-                <p className="text-bone4 text-[10px]">Usually takes 15-30 seconds</p>
+                <p className="text-muted-foreground text-[10px]">Usually takes 15-30 seconds</p>
               </div>
             </div>
           )}
@@ -234,7 +238,7 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
 
         {/* Score panel */}
         {isDone && showScore && score && (
-          <div className={`${mobileTab !== 'score' ? 'hidden' : 'block'} lg:block lg:w-[40%] border-l border-white/[0.04] overflow-y-auto p-4 lg:p-5`}>
+          <div className={`${mobileTab !== 'score' ? 'hidden' : 'block'} lg:block lg:w-[40%] border-l border-border overflow-y-auto p-4 lg:p-5`}>
             <ScoreReveal score={score} />
           </div>
         )}
@@ -242,17 +246,17 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
 
       {/* Bottom bar */}
       {isDone && (
-        <div className="border-t border-white/[0.04] px-4 lg:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 bg-bg2/80 backdrop-blur-sm animate-[fadeInUp_0.3s_ease-out]">
+        <div className="border-t border-border px-4 lg:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 bg-card/80 backdrop-blur-sm animate-[fadeInUp_0.3s_ease-out]">
           <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-hide">
-            <span className="text-bone4 text-xs shrink-0">Template:</span>
+            <span className="text-muted-foreground text-xs shrink-0">Template:</span>
             {TEMPLATES.filter(t => !t.isPro).map((t) => {
-              const isRec = FIELD_TEMPLATE_REC[field] === t.id;
+              const isRec = FIELD_TEMPLATE_REC[field] === (t.id as string);
               return (
                 <button
                   key={t.id}
-                  onClick={() => setTemplate(t.id)}
+                  onClick={() => setTemplate(t.id as unknown as Template)}
                   className={`px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap shrink-0 transition-colors ${
-                    template === t.id ? 'bg-accent text-bg font-medium' : 'bg-bg3/50 text-bone4 hover:text-bone3'
+                    (template as string) === (t.id as string) ? 'bg-accent text-white font-medium' : 'bg-secondary/50 text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {t.name}{isRec && <span className="ml-1 text-[9px] opacity-60">*</span>}
@@ -260,13 +264,9 @@ export default function StreamingView({ linkedinText, detectedField, onBack }: P
               );
             })}
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full sm:w-auto px-6 py-2.5 bg-accent text-bg text-sm font-semibold rounded-lg hover:bg-accent2 transition-colors disabled:opacity-50 shrink-0"
-          >
+          <Button onClick={handleSave} disabled={saving}>
             {saving ? 'Saving...' : 'Save & Edit'}
-          </button>
+          </Button>
         </div>
       )}
     </div>
