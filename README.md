@@ -130,8 +130,9 @@ src/
 
 ## Team
 
-Built by **Samir Suman** as a B.Tech Major Project  
-ARKA JAIN University — Computer Science & Engineering, 2025
+**Samir Suman**  
+B.Tech — Computer Science & Engineering  
+ARKA JAIN University, 2025
 
 ---
 
