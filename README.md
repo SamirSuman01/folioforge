@@ -8,7 +8,7 @@ ForgeFolio is a full-stack AI-powered career platform built for Indian engineeri
 
 ## Live Demo
 
-[https://folioforge.vercel.app](https://folioforge.vercel.app)
+[https://forgefolio-orcin.vercel.app](https://forgefolio-orcin.vercel.app)
 
 ---
 
@@ -130,9 +130,13 @@ src/
 
 ## Team
 
-**Samir Suman**  
+- Mahfuj Alam
+- Manish Thakur
+- Debashish Karua
+- Samir Suman
+
 B.Tech — Computer Science & Engineering  
-ARKA JAIN University, 2025
+ARKA JAIN University, 2026
 
 ---
 
