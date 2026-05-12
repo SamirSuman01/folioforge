@@ -112,7 +112,7 @@ export async function GET(request: Request) {
     topCities,
     topReferrers,
     recentVisitors,
-    isPro: portfolio.is_pro,
+    isPro: true,
     portfolioName,
     identifiedCompanyCount,
   });

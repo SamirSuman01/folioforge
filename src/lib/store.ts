@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { PortfolioData, SectionConfig, TemplateId, DEFAULT_SECTIONS } from './types';
-import { mockPortfolio } from './mock-data';
+
+const emptyPortfolio: PortfolioData = {
+  name: '', headline: '', about: '', skills: [],
+  projects: [], experience: [],
+  contact: { email: '' },
+};
 
 interface AppState {
   // Upload
@@ -40,7 +45,7 @@ export const useAppStore = create<AppState>((set) => ({
   setUploadedFile: (file) => set({ uploadedFile: file }),
 
   // Portfolio
-  portfolio: mockPortfolio,
+  portfolio: emptyPortfolio,
   setPortfolio: (data) => set({ portfolio: data }),
   updatePortfolioField: (key, value) =>
     set((state) => ({ portfolio: { ...state.portfolio, [key]: value } })),

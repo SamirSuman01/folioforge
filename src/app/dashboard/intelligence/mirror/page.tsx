@@ -94,7 +94,7 @@ export default function MirrorPage() {
   const [staleCache,    setStaleCache]    = useState(false)  // portfolio edited since last analysis
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const isPro = portfolio?.is_pro ?? false
+  const isPro = true
 
   // Load user + portfolios
   useEffect(() => {

@@ -154,6 +154,7 @@ export default function ATSAutopsyPage() {
 
   const [userName,    setUserName]    = useState('')
   const [userInitial, setUserInitial] = useState('?')
+  const [userId,      setUserId]      = useState<string>('')
   const [portfolios,  setPortfolios]  = useState<Portfolio[]>([])
   const [selectedId,  setSelectedId]  = useState<string>('')
 
@@ -190,6 +191,7 @@ export default function ATSAutopsyPage() {
       const fullName = user.user_metadata?.full_name as string ?? ''
       setUserName(fullName)
       setUserInitial(fullName.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?')
+      setUserId(user.id)
 
       const [portfolioRes, appRes] = await Promise.all([
         supabase
@@ -227,6 +229,7 @@ export default function ATSAutopsyPage() {
         const { data: inserted } = await supabase
           .from('applications')
           .insert({
+            user_id:   userId,
             company:   newCompany.trim(),
             role:      newRole.trim(),
             status:    'wishlist',
@@ -318,7 +321,7 @@ export default function ATSAutopsyPage() {
   }
 
   const selectedPortfolio = portfolios.find(p => p.id === selectedId)
-  const isPro             = selectedPortfolio?.is_pro ?? false
+  const isPro             = true
 
   function openInEditor() {
     if (!report || !selectedId) return
@@ -380,7 +383,7 @@ export default function ATSAutopsyPage() {
                   You need a portfolio before running an autopsy.
                 </p>
                 <Link
-                  href="/editor"
+                  href="/onboarding"
                   className="text-small font-mono text-accent hover:text-accent-hover transition-colors"
                 >
                   Build your portfolio →

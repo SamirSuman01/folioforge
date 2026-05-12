@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AppNav from '@/components/ui/AppNav'
 import { Button } from '@/components/ui/button'
@@ -37,6 +37,7 @@ export default function AnalyticsPage() {
 
 function AnalyticsContent() {
   const searchParams = useSearchParams()
+  const router       = useRouter()
   const portfolioId  = searchParams.get('id')
   const [data,        setData]        = useState<AnalyticsData | null>(null)
   const [loading,     setLoading]     = useState(true)
@@ -57,11 +58,33 @@ function AnalyticsContent() {
     }).catch(() => {})
   }, [])
 
+  // If no portfolio id in URL, auto-redirect to the user's first portfolio
+  useEffect(() => {
+    if (portfolioId) return
+    async function autoRedirect() {
+      const { createClient } = await import('@/lib/supabase-client')
+      const sb = createClient()
+      const { data: { user } } = await sb.auth.getUser()
+      if (!user) return
+      const { data: portfolios } = await sb
+        .from('portfolios')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+      if (portfolios?.[0]?.id) {
+        router.replace(`/dashboard/analytics?id=${portfolios[0].id}`)
+      } else {
+        setError('Build and publish a portfolio first to see analytics.')
+        setLoading(false)
+      }
+    }
+    autoRedirect()
+  }, [portfolioId, router])
+
   useEffect(() => {
     let cancelled = false
     if (!portfolioId) {
-      setError('Select a portfolio from the dashboard to view analytics.')
-      setLoading(false)
       return
     }
     const controller = new AbortController()

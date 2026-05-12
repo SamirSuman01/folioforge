@@ -79,6 +79,7 @@ export default function GhostDetectorPage() {
 
   const [userName,    setUserName]    = useState('')
   const [userInitial, setUserInitial] = useState('?')
+  const [userId,      setUserId]      = useState<string>('')
   const [portfolios,  setPortfolios]  = useState<Portfolio[]>([])
   const [selectedId,  setSelectedId]  = useState<string>('')
 
@@ -109,6 +110,7 @@ export default function GhostDetectorPage() {
       const fullName = user.user_metadata?.full_name as string ?? ''
       setUserName(fullName)
       setUserInitial(fullName.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?')
+      setUserId(user.id)
 
       const [portfolioRes, appRes] = await Promise.all([
         supabase
@@ -147,6 +149,7 @@ export default function GhostDetectorPage() {
         const { data: inserted } = await supabase
           .from('applications')
           .insert({
+            user_id:     userId,
             company:     newCompany.trim(),
             role:        newRole.trim(),
             status:      'wishlist',
@@ -223,7 +226,7 @@ export default function GhostDetectorPage() {
 
   const selectedPortfolio = portfolios.find(p => p.id === selectedId)
   const portfolioScore    = selectedPortfolio?.score ?? null
-  const isPro             = selectedPortfolio?.is_pro ?? false
+  const isPro             = true
   const charCount         = jd.trim().length
   const readyToSubmit     = charCount >= 150 && !analyzing
 

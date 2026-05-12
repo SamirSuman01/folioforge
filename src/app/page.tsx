@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { TrendingUp, Globe, Filter, IndianRupee, ShieldAlert, Layers, BarChart2, Network } from 'lucide-react'
-import SignalCard from '@/components/landing/SignalCard'
 import ScrollReveal from '@/components/landing/ScrollReveal'
 import HeroCTA from '@/components/landing/HeroCTA'
 import NavScroll from '@/components/landing/NavScroll'
@@ -11,8 +10,12 @@ import StickyBar from '@/components/landing/StickyBar'
 
 // Lazy-load below-fold client components — reduces initial JS bundle
 // for Tier-2/3 India mobile networks where TTI is the drop-off cliff.
-const AnimatedLog  = dynamic(() => import('@/components/landing/AnimatedLog'),  { ssr: false, loading: () => <div className="ll-log-placeholder" /> })
-const LiveActivity = dynamic(() => import('@/components/landing/LiveActivity'), { ssr: false, loading: () => null })
+const AnimatedLog      = dynamic(() => import('@/components/landing/AnimatedLog'),      { ssr: false, loading: () => <div className="ll-log-placeholder" /> })
+const LiveActivity     = dynamic(() => import('@/components/landing/LiveActivity'),     { ssr: false, loading: () => null })
+const LenisProvider    = dynamic(() => import('@/components/landing/LenisProvider'),    { ssr: false })
+const SignalCard3D      = dynamic(() => import('@/components/landing/SignalCard3D'),     { ssr: false })
+const RecruiterLens    = dynamic(() => import('@/components/landing/RecruiterLens'),    { ssr: false })
+const BentoBreakdown   = dynamic(() => import('@/components/landing/BentoBreakdown'),   { ssr: false })
 
 export const metadata: Metadata = {
   title: 'ForgeFolio — Know Your Signal Score in 60 Seconds',
@@ -157,6 +160,7 @@ export default function LandingPage() {
   return (
     <div className="landing-light">
 
+      <LenisProvider />
       <NavScroll />
       <HeroEffects />
 
@@ -238,10 +242,10 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right — Signal Card */}
+            {/* Right — Signal Card 3D */}
             <div className="ll-hero-right">
               <div className="ll-hero-right-inner">
-                <SignalCard />
+                <SignalCard3D />
                 <Link href="/p/demo" className="ll-card-caption-link">
                   See a live report →
                 </Link>
@@ -285,6 +289,9 @@ export default function LandingPage() {
             </Link>
           </div>
         </ScrollReveal>
+
+        {/* ── RECRUITER LENS ───────────────────────────── */}
+        <RecruiterLens />
 
         {/* ── HOW IT WORKS ─────────────────────────────── */}
         <section className="ll-how" id="how-it-works">
@@ -409,6 +416,9 @@ export default function LandingPage() {
             ))}
           </ScrollReveal>
         </section>
+
+        {/* ── BENTO BREAKDOWN ──────────────────────────── */}
+        <BentoBreakdown />
 
         {/* ── METRICS + TESTIMONIALS ────────────────────── */}
         <section className="ll-metrics" aria-label="Results and testimonials">

@@ -1,7 +1,6 @@
 import { NextResponse }         from 'next/server'
 import { createClient }         from '@/lib/supabase-server'
 import { generateGhostReport }  from '@/lib/ai'
-import { proGate }              from '@/lib/pro-gate'
 import { rateLimit }            from '@/lib/rate-limit'
 
 type PostingAge = '< 2 weeks' | '2–4 weeks' | '1–2 months' | '2+ months' | null
@@ -38,9 +37,6 @@ export async function POST(req: Request) {
         { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetMs - Date.now()) / 1000)) } }
       )
     }
-
-    const gate = await proGate(supabase, user.id)
-    if (gate) return gate
 
     const report = await generateGhostReport(jd.trim(), postingAge)
     return NextResponse.json(report)

@@ -1,7 +1,6 @@
 import { NextResponse }          from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase-server'
 import { generateCareerMirror }  from '@/lib/ai'
-import { proGate }               from '@/lib/pro-gate'
 import { rateLimit }             from '@/lib/rate-limit'
 import type { Portfolio, PortfolioExperience } from '@/lib/types'
 
@@ -77,9 +76,6 @@ export async function POST(req: Request) {
         { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetMs - Date.now()) / 1000)) } }
       )
     }
-
-    const gate = await proGate(supabase, user.id)
-    if (gate) return gate
 
     const { data: portfolio, error } = await supabase
       .from('portfolios')

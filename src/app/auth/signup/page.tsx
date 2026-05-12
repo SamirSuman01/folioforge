@@ -28,7 +28,7 @@ function SignupForm() {
   const [fullName, setFullName] = useState(() => {
     if (!fromOnboarding) return ''
     try {
-      const raw = sessionStorage.getItem('ff_onboarding')
+      const raw = localStorage.getItem('ff_onboarding')
       return raw ? (JSON.parse(raw).name ?? '') : ''
     } catch { return '' }
   })

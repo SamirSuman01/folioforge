@@ -125,7 +125,7 @@ export default function OfferAnalyzerPage() {
 
   const [userName,    setUserName]    = useState('')
   const [userInitial, setUserInitial] = useState('?')
-  const [isPro,       setIsPro]       = useState(false)
+  const [isPro,       setIsPro]       = useState(true)
 
   const [form,            setForm]            = useState<FormState>(EMPTY_FORM)
   const [showOptional,    setShowOptional]    = useState(false)
