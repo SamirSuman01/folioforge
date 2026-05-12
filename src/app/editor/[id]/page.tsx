@@ -68,6 +68,7 @@ export default function EditorPage() {
   // ── Load portfolio ──
   useEffect(() => {
     async function load() {
+      try {
       const res = await fetch(`/api/portfolio/${params.id}`)
       if (!res.ok) { router.push('/dashboard'); return }
       const p: Portfolio = await res.json()
@@ -103,6 +104,9 @@ export default function EditorPage() {
       setOpenExp((p.data.experience ?? []).map((_, i) => i === 0))
       setLoading(false)
       track('editor_loaded', { score: initial.total, is_published: p.is_published ?? false })
+      } catch {
+        router.push('/dashboard')
+      }
     }
     load()
   }, [params.id, router])
