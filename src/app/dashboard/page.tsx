@@ -22,13 +22,13 @@ interface Application {
 interface ScorePoint { score: number; recorded_at: string }
 
 interface HomeData {
-  portfolios:          Portfolio[]
-  userName:            string
-  userInitial:         string
-  college:             string
-  apps:                Application[]
-  recentViews:         { company: string; visited_at: string }[]
-  scoreHistory:        ScorePoint[]
+  portfolios:           Portfolio[]
+  userName:             string
+  userInitial:          string
+  college:              string
+  apps:                 Application[]
+  recentViews:          { company: string; visited_at: string }[]
+  scoreHistory:         ScorePoint[]
   publishedPortfolioId: string
 }
 
@@ -41,6 +41,12 @@ function scoreGrade(s: number) {
   if (s >= 60) return 'C+'
   if (s >= 50) return 'C'
   return 'D'
+}
+
+function scoreColor(s: number) {
+  if (s >= 80) return 'text-success'
+  if (s >= 60) return 'text-warning'
+  return 'text-error'
 }
 
 function timeAgo(iso: string) {
@@ -63,89 +69,99 @@ function isStale(app: Application) {
   return Math.floor((Date.now() - new Date(app.updated_at).getTime()) / (1000 * 60 * 60 * 24)) >= 14
 }
 
-// ─── Mini sparkline ───────────────────────────────────────
+// ─── Sparkline ────────────────────────────────────────────
 function Sparkline({ points }: { points: number[] }) {
   if (points.length < 2) return null
-  const W = 80, H = 24
+  const W = 96, H = 28
   const min = Math.min(...points) - 2
   const max = Math.max(...points) + 2
   const x = (i: number) => (i / (points.length - 1)) * W
   const y = (v: number) => H - ((v - min) / (max - min)) * H
-  const d = points.map((v, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(v)}`).join(' ')
+  const d = points.map((v, i) => `${i === 0 ? 'M' : 'L'} ${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ')
   const trend = points[points.length - 1] - points[0]
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-      <path d={d} fill="none" stroke={trend >= 0 ? '#166534' : '#991B1B'} strokeWidth="1.5" strokeLinejoin="round" />
+      <path d={d} fill="none" stroke={trend >= 0 ? '#166534' : '#991B1B'} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   )
 }
 
 // ─── Priority actions ─────────────────────────────────────
-function buildActions(data: HomeData): { label: string; href: string; why: string }[] {
+function buildActions(data: HomeData) {
   const actions: { label: string; href: string; why: string }[] = []
   const best = data.portfolios.find(p => p.score != null) ?? data.portfolios[0]
 
-  // Stale apps
   const staleApps = data.apps.filter(isStale)
-  if (staleApps.length > 0) {
-    actions.push({
-      label: `Follow up on ${staleApps.length} stale application${staleApps.length > 1 ? 's' : ''}`,
-      href:  '/dashboard/applications',
-      why:   '14+ days with no response — follow up or mark as ghosted',
-    })
-  }
+  if (staleApps.length > 0)
+    actions.push({ label: `Follow up on ${staleApps.length} stale application${staleApps.length > 1 ? 's' : ''}`, href: '/dashboard/applications', why: '14+ days no response — follow up or mark ghosted' })
 
-  // No published portfolio
   const published = data.portfolios.filter(p => p.is_published)
-  if (published.length === 0 && data.portfolios.length > 0 && best) {
-    actions.push({
-      label: 'Publish your portfolio',
-      href:  `/editor/${best.id}`,
-      why:   'No one can find you — publish to start getting analytics',
-    })
-  }
+  if (published.length === 0 && data.portfolios.length > 0 && best)
+    actions.push({ label: 'Publish your portfolio', href: `/editor/${best.id}`, why: 'No one can find you — publish to start getting analytics' })
 
-  // Low score
-  if (best?.score != null && best.score < 70) {
-    actions.push({
-      label: 'Improve your signal score',
-      href:  `/editor/${best.id}`,
-      why:   `Score is ${best.score}/100 — add metrics to bullets to push above 70`,
-    })
-  }
+  if (best?.score != null && best.score < 70)
+    actions.push({ label: 'Improve your signal score', href: `/editor/${best.id}`, why: `Score is ${best.score}/100 — add metrics to bullets to push above 70` })
 
-  // No applications tracked
-  if (data.apps.length === 0) {
-    actions.push({
-      label: 'Track your first application',
-      href:  '/dashboard/applications',
-      why:   'Start tracking where you apply — the pipeline catches ghost jobs automatically',
-    })
-  }
+  if (data.apps.length === 0)
+    actions.push({ label: 'Track your first application', href: '/dashboard/applications', why: 'The pipeline catches ghost jobs and tracks your response rate' })
 
-  // No portfolio at all
-  if (data.portfolios.length === 0) {
-    actions.push({
-      label: 'Build your first portfolio',
-      href:  '/onboarding',
-      why:   'Takes 3 minutes — paste your resume and the AI does the rest',
-    })
-  }
+  if (data.portfolios.length === 0)
+    actions.push({ label: 'Build your first portfolio', href: '/onboarding', why: 'Takes 3 minutes — paste your resume and AI does the rest' })
 
   return actions.slice(0, 3)
 }
+
+// ─── Intelligence tool icons ──────────────────────────────
+function MirrorIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M3 15c0-2.5 2.7-4 6-4s6 1.5 6 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  )
+}
+function FilterIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M2 4h14M5 9h8M8 14h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  )
+}
+function GhostIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M4 9V8a5 5 0 0 1 10 0v7l-2-2-2 2-2-2-2 2V9z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      <circle cx="7" cy="9" r="1" fill="currentColor"/>
+      <circle cx="11" cy="9" r="1" fill="currentColor"/>
+    </svg>
+  )
+}
+function OfferIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M3 12l4-4 3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13 6h2v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+const INTEL_TOOLS = [
+  { label: 'Career Mirror',   desc: 'How recruiters see you',    href: '/dashboard/intelligence/mirror', Icon: MirrorIcon },
+  { label: 'ATS Filter',      desc: 'See what fails the scan',   href: '/dashboard/intelligence/ats',    Icon: FilterIcon },
+  { label: 'Ghost Detector',  desc: 'Is this job actually real?',href: '/dashboard/intelligence/ghost',  Icon: GhostIcon  },
+  { label: 'Offer Analyzer',  desc: 'Is the salary fair?',       href: '/dashboard/intelligence/offer',  Icon: OfferIcon  },
+]
 
 // ─── Page ─────────────────────────────────────────────────
 export default function DashboardPage() {
   const router   = useRouter()
   const supabase = createClient()
 
-  const [data,     setData]     = useState<HomeData | null>(null)
-  const [loading,  setLoading]  = useState(true)
-  const [copied,   setCopied]   = useState<string | null>(null)
-  const [view,     setView]     = useState<'home' | 'portfolios'>('home')
-  const [liveView, setLiveView] = useState<{ company: string } | null>(null)
-  const copiedTimerRef          = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [data,    setData]    = useState<HomeData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [copied,  setCopied]  = useState<string | null>(null)
+  const [liveView,setLiveView]= useState<{ company: string } | null>(null)
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -158,20 +174,17 @@ export default function DashboardPage() {
         const userInitial = (fullName || userName)[0]?.toUpperCase() ?? '?'
         const college     = user.user_metadata?.college as string ?? ''
 
-        // Parallel fetch everything
         const [portfolioRes, appsRes, historyRes, analyticsRes] = await Promise.all([
           fetch('/api/portfolio'),
           supabase.from('applications').select('id,company,role,status,updated_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(20),
           supabase.from('score_history').select('score,recorded_at').eq('user_id', user.id).order('recorded_at', { ascending: false }).limit(10),
-          // Get recent views from first portfolio only
           supabase.from('portfolios').select('id').eq('user_id', user.id).eq('is_published', true).limit(1),
         ])
 
         const portfolios: Portfolio[] = portfolioRes.ok ? await portfolioRes.json() : []
-        const apps = (appsRes.data ?? []) as Application[]
+        const apps       = (appsRes.data ?? []) as Application[]
         const scoreHistory = ((historyRes.data ?? []) as ScorePoint[]).reverse()
 
-        // Get recent analytics views if published portfolio exists
         let recentViews: { company: string; visited_at: string }[] = []
         const firstPublished = (analyticsRes.data ?? [])[0]
         if (firstPublished) {
@@ -187,10 +200,10 @@ export default function DashboardPage() {
         const result = { portfolios, userName, userInitial, college, apps, recentViews, scoreHistory, publishedPortfolioId: firstPublished?.id ?? '' }
         setData(result)
         track('dashboard_page_view', {
-          has_portfolio:  portfolios.length > 0,
-          has_score:      portfolios.some(p => p.score != null),
-          has_apps:       apps.length > 0,
-          has_views:      recentViews.length > 0,
+          has_portfolio: portfolios.length > 0,
+          has_score:     portfolios.some(p => p.score != null),
+          has_apps:      apps.length > 0,
+          has_views:     recentViews.length > 0,
         })
       } catch {
         router.push('/auth/login')
@@ -201,18 +214,13 @@ export default function DashboardPage() {
     load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Realtime — pulse when a new view lands on the published portfolio
+  // Realtime live view pulse
   useEffect(() => {
     const id = data?.publishedPortfolioId
     if (!id) return
     const channel = supabase
       .channel(`live_views_${id}`)
-      .on('postgres_changes', {
-        event:  'INSERT',
-        schema: 'public',
-        table:  'analytics',
-        filter: `portfolio_id=eq.${id}`,
-      }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'analytics', filter: `portfolio_id=eq.${id}` }, (payload) => {
         const company = (payload.new as { company?: string }).company ?? ''
         setLiveView({ company: company || 'Someone' })
         track('dashboard_live_view_received', { company: company || 'unknown' })
@@ -227,7 +235,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`/api/portfolio/${id}`, { method: 'DELETE' })
       if (res.ok && data) setData({ ...data, portfolios: data.portfolios.filter(p => p.id !== id) })
-    } catch { /* network error — silent fail */ }
+    } catch { /* silent */ }
   }
 
   function copyLink(slug: string) {
@@ -238,14 +246,19 @@ export default function DashboardPage() {
     }).catch(() => {})
   }
 
+  // ── Loading skeleton ──────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <AppNav />
-        <main className="mx-auto max-w-4xl px-6 py-12 lg:px-8">
-          <div className="h-4 w-40 rounded bg-border animate-shimmer mb-10" />
-          <div className="grid grid-cols-3 gap-px bg-border border border-border">
-            {[1,2,3].map(i => <div key={i} className="bg-background p-6 h-28 animate-shimmer" />)}
+        <main className="mx-auto max-w-5xl px-6 py-10 lg:px-8">
+          <div className="h-7 w-48 rounded bg-border animate-shimmer mb-10" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            <div className="lg:col-span-2 h-52 rounded-xl bg-border animate-shimmer" />
+            <div className="flex flex-col gap-4">
+              <div className="flex-1 rounded-xl bg-border animate-shimmer" />
+              <div className="flex-1 rounded-xl bg-border animate-shimmer" />
+            </div>
           </div>
         </main>
       </div>
@@ -253,13 +266,13 @@ export default function DashboardPage() {
   }
 
   const { portfolios, userName, userInitial, college, apps, recentViews, scoreHistory } = data!
-  const bestPortfolio = portfolios.find(p => p.score != null) ?? portfolios[0] ?? null
-  const activeApps    = apps.filter(a => ACTIVE_STATUSES.includes(a.status))
-  const staleCount    = apps.filter(isStale).length
+  const bestPortfolio   = portfolios.find(p => p.score != null) ?? portfolios[0] ?? null
+  const activeApps      = apps.filter(a => ACTIVE_STATUSES.includes(a.status))
+  const staleCount      = apps.filter(isStale).length
   const identifiedViews = recentViews.filter(v => v.company && v.company !== 'Unknown')
-  const scoreTrend    = scoreHistory.map(h => h.score)
+  const scoreTrend      = scoreHistory.map(h => h.score)
+  const scoreDelta      = scoreTrend.length >= 2 ? scoreTrend[scoreTrend.length - 1] - scoreTrend[0] : null
 
-  // Warm signals — companies that viewed but aren't tracked in pipeline
   const warmSignals = identifiedViews
     .filter(v => {
       const viewed = v.company.toLowerCase()
@@ -269,27 +282,23 @@ export default function DashboardPage() {
       })
     })
     .slice(0, 3)
-  const scoreDelta    = scoreTrend.length >= 2 ? scoreTrend[scoreTrend.length - 1] - scoreTrend[0] : null
-  const actions       = buildActions(data!)
+
+  const actions = buildActions(data!)
 
   const hour  = new Date().getHours()
-  const month = new Date().getMonth() + 1  // 1–12
+  const month = new Date().getMonth() + 1
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const firstName = userName.split(' ')[0]
 
-  // Calendar-aware season nudge — one sentence, never generic
   const seasonNudge: string | null = (() => {
     if (month >= 8 && month <= 11) {
       const score = bestPortfolio?.score ?? null
-      if (score !== null && score < 70)
-        return `Placement season is active — your score is ${score}. Push above 70 before companies start shortlisting.`
-      if (score !== null && score >= 70)
-        return `Placement season is active — your signal is strong at ${score}. Keep it updated as applications move.`
+      if (score !== null && score < 70) return `Placement season is active — your score is ${score}. Push above 70 before companies start shortlisting.`
+      if (score !== null && score >= 70) return `Placement season is active and your signal is strong at ${score}. Keep it updated.`
       return 'Placement season is active. Build and publish your portfolio before companies start shortlisting.'
     }
-    if (month >= 12 || month <= 2)
-      return 'Lateral move window is open — Jan–Mar is when companies backfill. Good time to test the market.'
-    if (month >= 3 && month <= 4)
-      return 'Pre-placement prep window. Placement season starts in August — 4 months to sharpen your signal.'
+    if (month >= 12 || month <= 2) return 'Lateral move window is open — Jan–Mar is when companies backfill.'
+    if (month >= 3 && month <= 4)  return 'Pre-placement prep window. Placement season starts in August — 4 months to sharpen your signal.'
     return null
   })()
 
@@ -297,318 +306,307 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       <AppNav userName={userName} userInitial={userInitial} />
 
-      <main className="mx-auto max-w-4xl px-6 py-10 lg:px-8">
+      <main className="mx-auto max-w-5xl px-6 py-10 lg:px-8">
 
-        {/* ── Greeting + tabs ── */}
-        <div className="flex items-end justify-between mb-8 animate-slide-up-1">
-          <div>
-            <span className="text-micro font-mono text-text-disabled uppercase tracking-widest block mb-1">
-              Career OS
-            </span>
-            <h1 className="text-h2 font-bold text-text-primary tracking-tight">
-              {greeting}, {userName.split(' ')[0]}.
-            </h1>
-            {seasonNudge && (
-              <p className="text-small text-text-secondary mt-1.5 max-w-md">
-                {seasonNudge}
-              </p>
+        {/* ── Greeting ─────────────────────────────────────── */}
+        <div className="mb-10 animate-slide-up-1">
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+            {greeting}, {firstName}.
+          </h1>
+          {seasonNudge && (
+            <p className="text-sm text-text-secondary mt-1.5 max-w-lg leading-relaxed">
+              {seasonNudge}
+            </p>
+          )}
+        </div>
+
+        {/* ── Hero metrics row ──────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8 animate-slide-up-2">
+
+          {/* Signal Score — dominant (2/3 width) */}
+          <div className="lg:col-span-2 rounded-xl border border-border bg-background p-8">
+            <p className="text-[11px] font-mono text-text-disabled uppercase tracking-widest mb-5">
+              Signal Score
+            </p>
+            {bestPortfolio?.score != null ? (
+              <>
+                <div className="flex items-end gap-4 mb-4">
+                  <span className={cn('text-[72px] font-black font-mono tabular-nums leading-none', scoreColor(bestPortfolio.score))}>
+                    {bestPortfolio.score}
+                  </span>
+                  <div className="mb-1">
+                    <span className="text-2xl font-bold text-text-disabled">/100</span>
+                    <div className="text-base font-mono font-bold text-accent mt-1">{scoreGrade(bestPortfolio.score)}</div>
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="h-1.5 bg-border rounded-full overflow-hidden mb-4">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all',
+                      bestPortfolio.score >= 80 ? 'bg-success' : bestPortfolio.score >= 60 ? 'bg-warning' : 'bg-error'
+                    )}
+                    style={{ width: `${bestPortfolio.score}%` }}
+                  />
+                </div>
+
+                <div className="flex items-center gap-4 flex-wrap">
+                  {scoreDelta !== null && scoreDelta !== 0 && (
+                    <span className={cn('text-xs font-mono', scoreDelta > 0 ? 'text-success' : 'text-error')}>
+                      {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} since start
+                    </span>
+                  )}
+                  <Sparkline points={scoreTrend.slice(-6)} />
+                  {bestPortfolio.is_published && bestPortfolio.slug && (
+                    <Link
+                      href={`/badge/${bestPortfolio.slug}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="inline-flex items-center gap-1.5 text-xs font-mono text-text-disabled hover:text-accent transition-colors"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                      Share score →
+                    </Link>
+                  )}
+                  {college ? (
+                    <span className="text-xs font-mono text-text-disabled">{college}</span>
+                  ) : (
+                    <Link href="/dashboard/settings" className="text-xs font-mono text-text-disabled hover:text-text-secondary transition-colors">
+                      + Add college
+                    </Link>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div>
+                <p className="text-5xl font-black text-border mb-4">—</p>
+                <p className="text-sm text-text-secondary mb-4">Build a portfolio to get your signal score</p>
+                <Link href="/onboarding" className="text-sm font-mono text-accent hover:text-accent/80 transition-colors">
+                  Start now →
+                </Link>
+              </div>
             )}
           </div>
-          <div className="flex items-center gap-0 border-b border-border">
-            {(['home', 'portfolios'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => { setView(tab); track('dashboard_tab_switch', { tab }) }}
-                className={cn(
-                  'pb-2 mr-5 text-micro font-mono uppercase tracking-widest transition-colors border-b-2 -mb-px',
-                  view === tab
-                    ? 'border-accent text-text-primary'
-                    : 'border-transparent text-text-disabled hover:text-text-secondary'
-                )}
-              >
-                {tab === 'home' ? 'Overview' : 'Portfolios'}
-              </button>
-            ))}
+
+          {/* Pipeline + Views stacked (1/3 width) */}
+          <div className="flex flex-col gap-4">
+            {/* Pipeline */}
+            <div className="flex-1 rounded-xl border border-border bg-background p-6">
+              <p className="text-[11px] font-mono text-text-disabled uppercase tracking-widest mb-4">Pipeline</p>
+              {apps.length === 0 ? (
+                <>
+                  <p className="text-sm text-text-disabled mb-3 leading-relaxed">Start tracking applications</p>
+                  <Link href="/dashboard/applications" className="text-xs font-mono text-accent hover:text-accent/80 transition-colors">
+                    Add first →
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-black font-mono text-text-primary tabular-nums leading-none">
+                      {activeApps.length}
+                    </span>
+                    <span className="text-sm text-text-disabled">active</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {staleCount > 0 && (
+                      <span className="text-xs font-mono text-warning">{staleCount} stale</span>
+                    )}
+                    <Link href="/dashboard/applications" className="text-xs font-mono text-text-disabled hover:text-text-secondary transition-colors">
+                      {apps.length} total →
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Views */}
+            <div className="flex-1 rounded-xl border border-border bg-background p-6">
+              <p className="text-[11px] font-mono text-text-disabled uppercase tracking-widest mb-4">Views</p>
+              {recentViews.length === 0 ? (
+                <>
+                  <p className="text-sm text-text-disabled mb-3 leading-relaxed">Publish to see who's watching</p>
+                  {bestPortfolio && !bestPortfolio.is_published && (
+                    <Link href={`/editor/${bestPortfolio.id}`} className="text-xs font-mono text-accent hover:text-accent/80 transition-colors">
+                      Publish →
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-black font-mono text-text-primary tabular-nums leading-none">
+                      {recentViews.length}
+                    </span>
+                    <span className="text-sm text-text-disabled">recent</span>
+                  </div>
+                  {identifiedViews[0] && (
+                    <p className="text-xs font-mono text-text-secondary">
+                      {identifiedViews[0].company} · {timeAgo(identifiedViews[0].visited_at)}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {view === 'portfolios' ? (
-          /* ── Portfolios list view ── */
-          <div className="animate-slide-up-1">
-            <div className="flex items-baseline justify-between mb-6">
-              <span className="text-micro font-mono text-text-disabled uppercase tracking-widest">
-                {portfolios.length} portfolio{portfolios.length !== 1 ? 's' : ''}
-              </span>
-              <Button asChild size="md">
-                <Link href="/onboarding"><PlusIcon /> New portfolio</Link>
-              </Button>
+        {/* ── Warm signals ─────────────────────────────────── */}
+        {warmSignals.length > 0 && (
+          <div className="mb-8 animate-slide-up-3">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+              <h2 className="text-sm font-semibold text-text-primary">Warm Signals</h2>
+              <span className="text-xs text-text-disabled">— companies who viewed but haven&apos;t heard from you</span>
             </div>
-
-            {portfolios.length === 0 ? (
-              <div className="py-16 text-center">
-                <p className="text-small text-text-disabled mb-6">No portfolios yet.</p>
-                <Button asChild size="lg"><Link href="/onboarding">Build my first portfolio →</Link></Button>
-              </div>
-            ) : (
-              <div className="divide-y divide-border stagger-children">
-                {portfolios.map(p => (
-                  <PortfolioRow key={p.id} portfolio={p} copied={copied === p.slug} onCopy={() => copyLink(p.slug)} onDelete={() => handleDelete(p.id)} />
-                ))}
-                <div className="py-4">
-                  <Link href="/onboarding" className="flex items-center gap-2 text-small text-text-disabled hover:text-text-secondary transition-colors">
-                    <PlusIcon />New portfolio
+            <div className="rounded-xl border border-border divide-y divide-border overflow-hidden">
+              {warmSignals.map((v, i) => (
+                <div key={`${v.company}-${i}`} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-text-primary">{v.company}</p>
+                    <p className="text-xs text-text-disabled mt-0.5">Viewed {timeAgo(v.visited_at)}</p>
+                  </div>
+                  <Link
+                    href={`/dashboard/applications?company=${encodeURIComponent(v.company)}`}
+                    className="text-xs font-mono text-accent hover:text-accent/80 transition-colors shrink-0"
+                    onClick={() => track('dashboard_warm_signal_click', { company: v.company })}
+                  >
+                    Add to pipeline →
                   </Link>
                 </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Priority actions ─────────────────────────────── */}
+        {actions.length > 0 && (
+          <div className="mb-10 animate-slide-up-3">
+            <h2 className="text-sm font-semibold text-text-primary mb-4">Do this today</h2>
+            <div className="rounded-xl border border-border divide-y divide-border overflow-hidden">
+              {actions.map((action, i) => (
+                <Link
+                  key={i}
+                  href={action.href}
+                  className="flex items-start justify-between gap-4 px-5 py-4 group hover:bg-border-subtle/40 transition-colors"
+                  onClick={() => track('dashboard_action_click', { label: action.label, href: action.href })}
+                >
+                  <div>
+                    <p className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
+                      {action.label}
+                    </p>
+                    <p className="text-xs text-text-disabled mt-0.5">{action.why}</p>
+                  </div>
+                  <span className="text-text-disabled group-hover:text-accent transition-colors mt-0.5 shrink-0">→</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Bottom row: Applications + Intelligence ───────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12 animate-slide-up-4">
+
+          {/* Recent applications */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-text-primary">Recent Applications</h2>
+              <Link href="/dashboard/applications" className="text-xs text-text-disabled hover:text-text-secondary transition-colors">
+                View all →
+              </Link>
+            </div>
+            {apps.length === 0 ? (
+              <div className="rounded-xl border border-border px-5 py-8 text-center">
+                <p className="text-sm text-text-disabled mb-3">Nothing tracked yet</p>
+                <Link href="/dashboard/applications" className="text-xs font-mono text-accent hover:text-accent/80 transition-colors">
+                  Start tracking →
+                </Link>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-border divide-y divide-border overflow-hidden">
+                {apps.slice(0, 5).map(app => (
+                  <div key={app.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">{app.company}</p>
+                      <p className="text-xs text-text-disabled truncate">{app.role}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isStale(app) && (
+                        <span className="text-[10px] font-mono text-warning">Stale</span>
+                      )}
+                      <span className="text-[10px] font-mono text-text-disabled">{timeAgo(app.updated_at)}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        ) : (
-          /* ── Command center ── */
-          <>
-            {/* ── 3-panel status row ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-border border border-border mb-8 animate-slide-up-2">
 
-              {/* Signal — identity score */}
-              <div className="bg-background p-6">
-                <p className="text-micro font-mono text-text-disabled uppercase tracking-widest mb-3">Your Signal Score</p>
-                {bestPortfolio?.score != null ? (
-                  <>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-[2rem] font-bold font-mono text-text-primary tabular-nums leading-none">
-                        {bestPortfolio.score}
-                      </span>
-                      <span className="text-small font-mono text-text-disabled">/100 · {scoreGrade(bestPortfolio.score)}</span>
-                    </div>
-                    <div className="flex items-center gap-3 mt-2">
-                      {scoreDelta !== null && scoreDelta !== 0 && (
-                        <span className={cn(
-                          'text-micro font-mono',
-                          scoreDelta > 0 ? 'text-success' : 'text-error'
-                        )}>
-                          {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} since start
-                        </span>
-                      )}
-                      <Sparkline points={scoreTrend.slice(-6)} />
-                    </div>
-                    <div className="flex items-center gap-4 mt-3 flex-wrap">
-                      {bestPortfolio.is_published && bestPortfolio.slug && (
-                        <Link
-                          href={`/badge/${bestPortfolio.slug}`}
-                          target="_blank"
-                          rel="noopener"
-                          className="inline-flex items-center gap-1 text-micro font-mono text-text-disabled hover:text-accent transition-colors"
-                        >
-                          <span className="h-1 w-1 rounded-full bg-success" />
-                          Share your score →
-                        </Link>
-                      )}
-                      {college && (
-                        <span className="text-micro font-mono text-text-disabled">
-                          {college}
-                        </span>
-                      )}
-                      {!college && (
-                        <Link
-                          href="/dashboard/settings"
-                          className="text-micro font-mono text-text-disabled hover:text-text-secondary transition-colors"
-                        >
-                          + Add college
-                        </Link>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div>
-                    <p className="text-small text-text-disabled mb-3">Your score is waiting to be built</p>
-                    <Link href="/onboarding" className="text-small font-mono text-accent hover:text-accent/80 transition-colors">
-                      Build portfolio →
-                    </Link>
+          {/* Intelligence 2×2 grid */}
+          <div>
+            <h2 className="text-sm font-semibold text-text-primary mb-4">Intelligence</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {INTEL_TOOLS.map(({ label, desc, href, Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="group flex flex-col gap-3 p-4 rounded-xl border border-border hover:border-accent/30 hover:bg-border-subtle/40 transition-all"
+                >
+                  <div className="w-9 h-9 rounded-lg border border-border bg-background flex items-center justify-center text-text-secondary group-hover:text-accent group-hover:border-accent/30 transition-colors">
+                    <Icon />
                   </div>
-                )}
-              </div>
-
-              {/* Pipeline */}
-              <div className="bg-background p-6 border-t sm:border-t-0 sm:border-l border-border">
-                <p className="text-micro font-mono text-text-disabled uppercase tracking-widest mb-3">Pipeline</p>
-                {apps.length === 0 ? (
                   <div>
-                    <p className="text-small text-text-disabled mb-3">Every application is a signal — start tracking</p>
-                    <Link href="/dashboard/applications" className="text-small font-mono text-accent hover:text-accent/80 transition-colors">
-                      Start tracking →
-                    </Link>
+                    <p className="text-sm font-medium text-text-primary leading-tight">{label}</p>
+                    <p className="text-xs text-text-disabled mt-0.5 leading-tight">{desc}</p>
                   </div>
-                ) : (
-                  <>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-[2rem] font-bold font-mono text-text-primary tabular-nums leading-none">
-                        {activeApps.length}
-                      </span>
-                      <span className="text-small font-mono text-text-disabled">active</span>
-                    </div>
-                    <div className="flex items-center gap-3 mt-2">
-                      {staleCount > 0 && (
-                        <span className="text-micro font-mono text-warning">{staleCount} stale</span>
-                      )}
-                      <Link href="/dashboard/applications" className="text-micro font-mono text-text-disabled hover:text-text-secondary transition-colors">
-                        {apps.length} total →
-                      </Link>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Views */}
-              <div className="bg-background p-6 border-t sm:border-t-0 sm:border-l border-border">
-                <p className="text-micro font-mono text-text-disabled uppercase tracking-widest mb-3">Views</p>
-                {recentViews.length === 0 ? (
-                  <div>
-                    <p className="text-small text-text-disabled mb-3">Publish your portfolio to start getting seen</p>
-                    {bestPortfolio && !bestPortfolio.is_published && (
-                      <Link href={`/editor/${bestPortfolio.id}`} className="text-small font-mono text-accent hover:text-accent/80 transition-colors">
-                        Publish to track →
-                      </Link>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-[2rem] font-bold font-mono text-text-primary tabular-nums leading-none">
-                        {recentViews.length}
-                      </span>
-                      <span className="text-small font-mono text-text-disabled">recent</span>
-                    </div>
-                    {identifiedViews[0] && (
-                      <p className="text-micro font-mono text-text-secondary mt-2">
-                        {identifiedViews[0].company} · {timeAgo(identifiedViews[0].visited_at)}
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
+                </Link>
+              ))}
             </div>
+          </div>
+        </div>
 
-            {/* ── Warm signals — companies that viewed but aren't in pipeline ── */}
-            {warmSignals.length > 0 && (
-              <div className="mb-8 animate-slide-up-3">
-                <span className="text-micro font-mono text-text-disabled uppercase tracking-widest block mb-4">
-                  Warm signals
-                </span>
-                <div className="divide-y divide-border border-t border-border">
-                  {warmSignals.map((v, i) => (
-                    <div key={`${v.company}-${i}`} className="py-3.5 flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-small font-medium text-text-primary">{v.company}</p>
-                          <p className="text-micro font-mono text-text-disabled">viewed {timeAgo(v.visited_at)} · they haven&apos;t heard from you yet</p>
-                        </div>
-                      </div>
-                      <Link
-                        href={`/dashboard/applications?company=${encodeURIComponent(v.company)}`}
-                        className="text-micro font-mono text-accent hover:text-accent/80 transition-colors shrink-0"
-                        onClick={() => track('dashboard_warm_signal_click', { company: v.company })}
-                      >
-                        Add to pipeline →
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* ── Portfolios ────────────────────────────────────── */}
+        <div className="pt-8 border-t border-border animate-slide-up-4">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-sm font-semibold text-text-primary">
+              Your Portfolios
+              <span className="ml-2 text-text-disabled font-normal">({portfolios.length})</span>
+            </h2>
+            <Button asChild size="md">
+              <Link href="/onboarding">
+                <PlusIcon /> New portfolio
+              </Link>
+            </Button>
+          </div>
 
-            {/* ── What to do today ── */}
-            {actions.length > 0 && (
-              <div className="mb-8 animate-slide-up-3">
-                <span className="text-micro font-mono text-text-disabled uppercase tracking-widest block mb-4">
-                  Do this today
-                </span>
-                <div className="divide-y divide-border border-t border-border">
-                  {actions.map((action, i) => (
-                    <Link
-                      key={i}
-                      href={action.href}
-                      className="flex items-start justify-between gap-4 py-3.5 group hover:bg-border-subtle/50 transition-colors -mx-1 px-1"
-                      onClick={() => track('dashboard_action_click', { label: action.label, href: action.href })}
-                    >
-                      <div>
-                        <p className="text-small font-medium text-text-primary group-hover:text-accent transition-colors">
-                          {action.label}
-                        </p>
-                        <p className="text-micro text-text-disabled mt-0.5">{action.why}</p>
-                      </div>
-                      <span className="text-text-disabled group-hover:text-accent transition-colors mt-0.5 shrink-0">→</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── Two columns: recent activity + quick tools ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-slide-up-4">
-
-              {/* Recent applications */}
-              <div>
-                <div className="flex items-baseline justify-between mb-4">
-                  <span className="text-micro font-mono text-text-disabled uppercase tracking-widest">Applications</span>
-                  <Link href="/dashboard/applications" className="text-micro font-mono text-text-disabled hover:text-text-secondary transition-colors">
-                    View all →
-                  </Link>
-                </div>
-                {apps.length === 0 ? (
-                  <p className="text-small text-text-disabled py-2">Nothing tracked yet.</p>
-                ) : (
-                  <div className="divide-y divide-border border-t border-border">
-                    {apps.slice(0, 4).map(app => (
-                      <div key={app.id} className="py-3 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-small text-text-primary truncate">{app.company}</p>
-                          <p className="text-micro text-text-disabled truncate">{app.role}</p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {isStale(app) && (
-                            <span className="text-micro font-mono text-warning">Stale</span>
-                          )}
-                          <span className="text-micro font-mono text-text-disabled">{timeAgo(app.updated_at)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Intelligence tools */}
-              <div>
-                <span className="text-micro font-mono text-text-disabled uppercase tracking-widest block mb-4">Intelligence</span>
-                <div className="divide-y divide-border border-t border-border">
-                  {[
-                    { label: 'Career Mirror',   desc: 'How recruiters read you',        href: '/dashboard/intelligence/mirror' },
-                    { label: 'Job Filter Check', desc: 'Paste a JD — see what fails',    href: '/dashboard/intelligence/ats'    },
-                    { label: 'Offer Analyzer',   desc: 'Is the salary fair?',            href: '/dashboard/intelligence/offer'  },
-                    { label: 'Fake Job Detector', desc: 'Is this role actually real?',   href: '/dashboard/intelligence/ghost'  },
-                  ].map(tool => (
-                    <Link
-                      key={tool.href}
-                      href={tool.href}
-                      className="flex items-center justify-between gap-3 py-3 group hover:bg-border-subtle/50 transition-colors -mx-1 px-1"
-                    >
-                      <div>
-                        <p className="text-small text-text-primary group-hover:text-accent transition-colors">{tool.label}</p>
-                        <p className="text-micro text-text-disabled">{tool.desc}</p>
-                      </div>
-                      <span className="text-text-disabled group-hover:text-accent transition-colors shrink-0">→</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+          {portfolios.length === 0 ? (
+            <div className="rounded-xl border border-border px-5 py-12 text-center">
+              <p className="text-sm text-text-disabled mb-5">No portfolios yet. Build one in 3 minutes.</p>
+              <Button asChild size="lg">
+                <Link href="/onboarding">Build my first portfolio →</Link>
+              </Button>
             </div>
-          </>
-        )}
+          ) : (
+            <div className="rounded-xl border border-border divide-y divide-border overflow-hidden">
+              {portfolios.map(p => (
+                <PortfolioRow
+                  key={p.id}
+                  portfolio={p}
+                  copied={copied === p.slug}
+                  onCopy={() => copyLink(p.slug)}
+                  onDelete={() => handleDelete(p.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
-      {/* Live view notification */}
+      {/* Live view toast */}
       {liveView && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2.5 border border-border bg-background text-micro font-mono text-text-primary animate-slide-up whitespace-nowrap">
-          <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse shrink-0" />
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-full border border-border bg-background shadow-lg text-sm font-medium text-text-primary animate-slide-up whitespace-nowrap">
+          <span className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />
           {liveView.company === 'Someone' ? 'Someone' : liveView.company} is reading your portfolio right now
         </div>
       )}
@@ -623,36 +621,41 @@ function PortfolioRow({ portfolio: p, copied, onCopy, onDelete }: {
   const name     = p.data?.name || 'Untitled'
   const subtitle = (p.data as { role?: string })?.role || (p.data as { tagline?: string })?.tagline || ''
   return (
-    <div className="py-5 flex items-center gap-5">
+    <div className="flex items-center gap-4 px-5 py-4">
       <div className="flex-1 min-w-0">
-        <p className="text-small font-medium text-text-primary truncate">{name}</p>
-        {subtitle && <p className="text-micro text-text-disabled mt-0.5 truncate">{subtitle}</p>}
+        <p className="text-sm font-medium text-text-primary truncate">{name}</p>
+        {subtitle && <p className="text-xs text-text-disabled mt-0.5 truncate">{subtitle}</p>}
       </div>
-      <div className="shrink-0 w-16 text-right hidden sm:block">
-        {p.score != null ? (
-          <span className="text-small font-mono text-text-primary tabular-nums">
-            {p.score}<span className="text-text-disabled text-micro"> / {scoreGrade(p.score)}</span>
+
+      {p.score != null && (
+        <div className="shrink-0 hidden sm:block text-right w-16">
+          <span className="text-sm font-mono font-bold text-text-primary tabular-nums">
+            {p.score}
           </span>
-        ) : (
-          <span className="text-micro font-mono text-text-disabled">—</span>
-        )}
-      </div>
-      <div className="shrink-0 w-20 hidden sm:block">
-        <span className={cn('text-micro font-mono', p.is_published ? 'text-success' : 'text-text-disabled')}>
+          <span className="text-xs text-text-disabled font-mono"> /{scoreGrade(p.score)}</span>
+        </div>
+      )}
+
+      <div className="shrink-0 hidden sm:block w-20">
+        <span className={cn('text-xs font-mono', p.is_published ? 'text-success' : 'text-text-disabled')}>
           {p.is_published ? 'Published' : 'Draft'}
         </span>
       </div>
-      <div className="shrink-0 w-16 hidden md:block">
-        <span className="text-micro font-mono text-text-disabled tabular-nums">
-          {p.created_at ? formatDate(p.created_at) : '—'}
-        </span>
+
+      <div className="shrink-0 hidden md:block w-16">
+        <span className="text-xs font-mono text-text-disabled">{p.created_at ? formatDate(p.created_at) : '—'}</span>
       </div>
+
       <div className="shrink-0 flex items-center gap-1">
-        <Button size="sm" asChild><Link href={`/editor/${p.id}`}>Edit</Link></Button>
+        <Button size="sm" asChild>
+          <Link href={`/editor/${p.id}`}>Edit</Link>
+        </Button>
         {p.is_published && (
           <>
             <Button size="sm" variant="secondary" asChild>
-              <Link href={`/p/${p.slug}`} target="_blank" rel="noopener noreferrer" aria-label="View live"><ExternalLinkIcon /></Link>
+              <Link href={`/p/${p.slug}`} target="_blank" rel="noopener noreferrer" aria-label="View live">
+                <ExternalLinkIcon />
+              </Link>
             </Button>
             <Button size="sm" variant="secondary" onClick={onCopy} aria-label="Copy link">
               {copied ? <CheckIcon /> : <CopyIcon />}
