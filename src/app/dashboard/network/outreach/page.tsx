@@ -1,10 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
-import AppNav from '@/components/ui/AppNav'
 import { Button } from '@/components/ui/button'
 import type { Connection, TargetCompany, OutreachMessage, Portfolio } from '@/lib/types'
 
@@ -177,7 +176,6 @@ function OutreachPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppNav userName={userName} userInitial={userInitial} />
 
       <main className="mx-auto max-w-3xl px-5 lg:px-8 py-10">
 

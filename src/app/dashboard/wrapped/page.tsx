@@ -1,10 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
-import AppNav from '@/components/ui/AppNav'
 
 // ─── Helpers ──────────────────────────────────────────────
 function getLastQuarter() {
@@ -201,7 +200,6 @@ export default function WrappedPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <AppNav userName={userName} userInitial={userInitial} />
         <div className="mx-auto max-w-4xl px-6 py-12">
           <div className="h-px bg-border animate-pulse" />
         </div>
@@ -249,7 +247,6 @@ export default function WrappedPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppNav userName={userName} userInitial={userInitial} />
 
       <main className="mx-auto max-w-4xl px-6 py-10 lg:px-8">
 

@@ -1,10 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
-import AppNav from '@/components/ui/AppNav'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -117,7 +116,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppNav userName={fullName} userInitial={userInitial} />
 
       <main className="mx-auto max-w-3xl px-5 py-10 lg:px-8">
 

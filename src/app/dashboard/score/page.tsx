@@ -1,10 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
-import AppNav from '@/components/ui/AppNav'
 
 // ─── Types ────────────────────────────────────────────────
 interface ScorePoint {
@@ -233,7 +232,6 @@ export default function ScoreTimelinePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <AppNav userName={userName} userInitial={userInitial} />
         <div className="mx-auto max-w-4xl px-6 py-12 lg:px-8">
           <div className="h-px w-full bg-border animate-pulse" />
         </div>
@@ -244,7 +242,6 @@ export default function ScoreTimelinePage() {
   if (fetchError) {
     return (
       <div className="min-h-screen bg-background">
-        <AppNav userName={userName} userInitial={userInitial} />
         <main className="mx-auto max-w-4xl px-6 py-20 lg:px-8 text-center">
           <p className="text-micro font-mono text-error uppercase tracking-widest mb-3">Error</p>
           <h2 className="text-h2 font-bold text-text-primary mb-2">Couldn't load portfolios</h2>
@@ -258,7 +255,6 @@ export default function ScoreTimelinePage() {
   if (!portfolios.length) {
     return (
       <div className="min-h-screen bg-background">
-        <AppNav userName={userName} userInitial={userInitial} />
         <main className="mx-auto max-w-4xl px-6 py-20 lg:px-8 text-center">
           <p className="text-micro font-mono text-text-disabled uppercase tracking-widest mb-3">Score · Timeline</p>
           <h2 className="text-h2 font-bold text-text-primary mb-2">No portfolios yet</h2>
@@ -271,7 +267,6 @@ export default function ScoreTimelinePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppNav userName={userName} userInitial={userInitial} />
 
       <main className="mx-auto max-w-4xl px-6 py-10 lg:px-8">
 

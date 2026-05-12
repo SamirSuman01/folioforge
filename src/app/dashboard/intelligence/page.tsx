@@ -1,10 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
-import AppNav from '@/components/ui/AppNav'
 import { Button } from '@/components/ui/button'
 import type { Portfolio, IntelligenceReport, SkillGapLevel, CompanySignalType } from '@/lib/types'
 import { track } from '@/lib/funnel'
@@ -123,7 +122,6 @@ function IntelligencePageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppNav userName={userName} userInitial={userInitial} />
 
       <main className="mx-auto max-w-4xl px-6 lg:px-8 py-12">
 

@@ -1,10 +1,9 @@
-'use client'
+﻿'use client'
 
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
-import AppNav from '@/components/ui/AppNav'
 
 // ─── Types ────────────────────────────────────────────────
 type AppStatus =
@@ -643,7 +642,6 @@ function ApplicationsContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <AppNav userName={userName} userInitial={userInitial} />
         <div className="mx-auto max-w-4xl px-6 py-12 lg:px-8">
           <div className="h-px w-full bg-border animate-pulse" />
         </div>
@@ -653,7 +651,6 @@ function ApplicationsContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppNav userName={userName} userInitial={userInitial} />
 
       <main className="mx-auto max-w-4xl px-6 py-10 lg:px-8">
 
