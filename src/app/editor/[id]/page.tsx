@@ -72,6 +72,14 @@ export default function EditorPage() {
       const res = await fetch(`/api/portfolio/${params.id}`)
       if (!res.ok) { router.push('/dashboard'); return }
       const p: Portfolio = await res.json()
+      // Ensure all array fields exist so .map() never throws
+      p.data = {
+        ...p.data,
+        skills:     p.data.skills     ?? [],
+        projects:   p.data.projects   ?? [],
+        experience: p.data.experience ?? [],
+        stats:      p.data.stats      ?? [],
+      }
       setPortfolio(p)
       setData(p.data)
       setTemplate(p.template as Template)
