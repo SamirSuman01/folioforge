@@ -41,22 +41,11 @@ function scoreGrade(s: number) {
   return 'D'
 }
 
-function scoreTextColor(s: number) {
-  if (s >= 80) return 'text-[#3FB950]'
-  if (s >= 60) return 'text-amber-400'
-  return 'text-red-400'
-}
-
-function scoreBarColor(s: number) {
-  if (s >= 80) return 'bg-[#3FB950]'
-  if (s >= 60) return 'bg-amber-400'
-  return 'bg-red-400'
-}
-
-function glowColor(s: number) {
-  if (s >= 80) return 'radial-gradient(circle, #3FB950 0%, transparent 70%)'
-  if (s >= 60) return 'radial-gradient(circle, #FBBF24 0%, transparent 70%)'
-  return 'radial-gradient(circle, #F87171 0%, transparent 70%)'
+// Always inline styles — never dynamic Tailwind classes (purged in prod)
+function scoreHex(s: number) {
+  if (s >= 80) return '#3FB950'
+  if (s >= 60) return '#FBBF24'
+  return '#F87171'
 }
 
 function timeAgo(iso: string) {
@@ -262,8 +251,12 @@ export default function DashboardPage() {
           <div className="rounded-2xl bg-[#0F172A] px-10 py-10 relative overflow-hidden">
             {score != null && (
               <div
-                className="absolute right-0 top-0 w-96 h-96 pointer-events-none opacity-[0.07]"
-                style={{ background: glowColor(score), transform: 'translate(40%, -40%)' }}
+                className="absolute right-0 top-0 w-96 h-96 pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle, ${scoreHex(score)} 0%, transparent 70%)`,
+                  opacity: 0.07,
+                  transform: 'translate(40%, -40%)',
+                }}
               />
             )}
 
@@ -276,36 +269,39 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex items-end gap-4 mb-6">
                     <span
-                      className={cn('font-black font-mono tabular-nums leading-none', scoreTextColor(score))}
-                      style={{ fontSize: 'clamp(88px, 9vw, 120px)' }}
+                      className="font-black font-mono tabular-nums leading-none"
+                      style={{ fontSize: 'clamp(88px, 9vw, 120px)', color: scoreHex(score) }}
                     >
                       {score}
                     </span>
                     <div className="flex flex-col gap-1.5 mb-2">
                       <span className="text-xl font-semibold text-slate-600">/100</span>
-                      <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-md bg-white/8 text-slate-400 w-fit tracking-wide">
+                      <span
+                        className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-md w-fit tracking-wide"
+                        style={{ background: 'rgba(255,255,255,0.08)', color: scoreHex(score) }}
+                      >
                         Grade {scoreGrade(score)}
                       </span>
                     </div>
                   </div>
 
-                  {/* Progress bar */}
-                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden" style={{ width: 'clamp(200px, 30vw, 320px)' }}>
-                    <div className={cn('h-full rounded-full transition-all duration-500', scoreBarColor(score))} style={{ width: `${score}%` }} />
+                  {/* Progress bar — h-2 for visibility */}
+                  <div className="h-2 rounded-full overflow-hidden" style={{ width: 'clamp(200px, 30vw, 320px)', background: 'rgba(255,255,255,0.10)' }}>
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${score}%`, backgroundColor: scoreHex(score), transition: 'width 0.5s ease' }}
+                    />
                   </div>
                 </div>
 
                 {/* Sparkline + meta */}
                 <div className="flex flex-col gap-3 lg:items-end pb-1">
                   {trend.length >= 2 && (
-                    <Sparkline
-                      points={trend.slice(-8)}
-                      color={score >= 80 ? '#3FB950' : score >= 60 ? '#FBBF24' : '#F87171'}
-                    />
+                    <Sparkline points={trend.slice(-8)} color={scoreHex(score)} />
                   )}
                   <div className="flex items-center gap-5 flex-wrap">
                     {delta !== null && delta !== 0 && (
-                      <span className={cn('text-xs font-mono', delta > 0 ? 'text-[#3FB950]' : 'text-red-400')}>
+                      <span className="text-xs font-mono" style={{ color: delta > 0 ? '#3FB950' : '#F87171' }}>
                         {delta > 0 ? `+${delta}` : delta} points
                       </span>
                     )}
@@ -352,8 +348,8 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 {staleCount > 0 && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-mono text-warning">
-                    <span className="h-1.5 w-1.5 rounded-full bg-warning" />
+                  <span className="inline-flex items-center gap-1.5 text-xs font-mono" style={{ color: '#92400E' }}>
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#92400E' }} />
                     {staleCount} stale
                   </span>
                 )}
@@ -472,49 +468,30 @@ export default function DashboardPage() {
           <h2 className="text-sm font-semibold text-text-primary mb-5">Intelligence</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
 
-            <Link href="/dashboard/intelligence/mirror"
-              className="flex flex-col gap-5 p-6 rounded-xl border border-border bg-background hover:border-blue-200 hover:shadow-sm transition-all group">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                <MirrorIcon />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-text-primary">Career Mirror</p>
-                <p className="text-xs text-text-disabled mt-1.5 leading-relaxed">How recruiters see you</p>
-              </div>
-            </Link>
-
-            <Link href="/dashboard/intelligence/ats"
-              className="flex flex-col gap-5 p-6 rounded-xl border border-border bg-background hover:border-purple-200 hover:shadow-sm transition-all group">
-              <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
-                <FilterIcon />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-text-primary">ATS Filter</p>
-                <p className="text-xs text-text-disabled mt-1.5 leading-relaxed">See what fails the scan</p>
-              </div>
-            </Link>
-
-            <Link href="/dashboard/intelligence/ghost"
-              className="flex flex-col gap-5 p-6 rounded-xl border border-border bg-background hover:border-amber-200 hover:shadow-sm transition-all group">
-              <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
-                <GhostIcon />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-text-primary">Ghost Detector</p>
-                <p className="text-xs text-text-disabled mt-1.5 leading-relaxed">Real job or ghost listing?</p>
-              </div>
-            </Link>
-
-            <Link href="/dashboard/intelligence/offer"
-              className="flex flex-col gap-5 p-6 rounded-xl border border-border bg-background hover:border-emerald-200 hover:shadow-sm transition-all group">
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
-                <OfferIcon />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-text-primary">Offer Analyzer</p>
-                <p className="text-xs text-text-disabled mt-1.5 leading-relaxed">Is the salary fair?</p>
-              </div>
-            </Link>
+            {[
+              { href: '/dashboard/intelligence/mirror', label: 'Career Mirror',  desc: 'How recruiters see you',    Icon: MirrorIcon, bg: '#DBEAFE', color: '#1D4ED8' },
+              { href: '/dashboard/intelligence/ats',    label: 'ATS Filter',     desc: 'See what fails the scan',   Icon: FilterIcon, bg: '#EDE9FE', color: '#6D28D9' },
+              { href: '/dashboard/intelligence/ghost',  label: 'Ghost Detector', desc: 'Real job or ghost listing?',Icon: GhostIcon,  bg: '#FEF3C7', color: '#B45309' },
+              { href: '/dashboard/intelligence/offer',  label: 'Offer Analyzer', desc: 'Is the salary fair?',       Icon: OfferIcon,  bg: '#D1FAE5', color: '#065F46' },
+            ].map(({ href, label, desc, Icon, bg, color }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex flex-col gap-5 p-6 rounded-xl border border-border bg-background hover:shadow-sm transition-all group"
+                style={{ '--hover-border': color } as React.CSSProperties}
+              >
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: bg, color }}
+                >
+                  <Icon />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-text-primary">{label}</p>
+                  <p className="text-xs text-text-disabled mt-1.5 leading-relaxed">{desc}</p>
+                </div>
+              </Link>
+            ))}
 
           </div>
         </div>
@@ -543,7 +520,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {isStale(app) && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-warning/10 text-warning">Stale</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: 'rgba(146,64,14,0.1)', color: '#92400E' }}>Stale</span>
                     )}
                     <span className="text-xs font-mono text-text-disabled">{timeAgo(app.updated_at)}</span>
                   </div>
@@ -630,10 +607,13 @@ function PortfolioRow({ portfolio: p, index, copied, onCopy, onDelete }: {
       )}
 
       <div className="shrink-0 hidden sm:block">
-        <span className={cn(
-          'text-[11px] font-mono px-2 py-1 rounded-md',
-          p.is_published ? 'bg-success/10 text-success' : 'bg-border-subtle text-text-disabled'
-        )}>
+        <span
+          className="text-[11px] font-mono px-2 py-1 rounded-md"
+          style={p.is_published
+            ? { background: 'rgba(22,101,52,0.1)', color: '#166534' }
+            : { background: '#F1F5F9', color: '#94A3B8' }
+          }
+        >
           {p.is_published ? 'Published' : 'Draft'}
         </span>
       </div>
