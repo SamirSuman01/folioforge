@@ -320,7 +320,7 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
   });
 
   // Stats completeness (4 pts)
-  const completeStats = stats.filter(s => s.value.length > 0 && s.label.length > 0);
+  const completeStats = stats.filter(s => (s.value ?? '').length > 0 && (s.label ?? '').length > 0);
   const statsDepthPoints = Math.min(completeStats.length, 4);
   depth += statsDepthPoints;
   depthItems.push({
@@ -410,7 +410,7 @@ export function scorePortfolio(data: PortfolioData, field: Field): ScoreBreakdow
 
   // No empty fields (5 pts)
   const emptyChecks = [
-    data.name.length < 2,
+    (data.name ?? '').length < 2,
     role.length < 3,
     experience.some(e => !e.company || !e.title),
     education.some(e => !e.institution),
